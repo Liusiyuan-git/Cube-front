@@ -1,0 +1,11 @@
+const angular = require("angular");
+const app = angular.module("tool.common");
+window.moment = require("moment");
+const moduleJsonLoaders = require.context("./",true,/moudle\.json$/);
+moduleJsonLoaders.keys().forEach((key)=>{
+    app.config(["$stateProvider", moduleJsonLoaders(key)])
+});
+app.config(["$httpProvider", function ($httpProvider){
+    $httpProvider.defaults.withCredentials = true;
+}])
+export default app;
