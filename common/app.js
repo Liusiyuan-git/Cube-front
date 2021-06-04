@@ -1,6 +1,6 @@
 const angular = require("angular")
 const angularAnimate = require("angular-animate")
-require("angular-file-upload-shim/dist/angular-file-upload")
+require("angular-file-upload")
 require("moment").locale("zh-cn")
 require("angular-moment")
 const app = angular.module("tool.common",[angularAnimate, "angularFileUpload", "angularMoment"])
