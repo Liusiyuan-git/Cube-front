@@ -7,7 +7,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
         $scope.init = function () {
             $scope.cover = null
             $scope.sendResult = null;
-            $scope.dataSaveConfirm  = null;
+            $scope.dataSaveConfirm = null;
             $scope.reader = new FileReader();
             $scope.editorInit();
             $scope.scroll()
@@ -117,9 +117,9 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                 return null
             }
             let content = $scope.editor.txt.getJSON()
-            console.log(content)
             let params = {
                 cubeid: $rootScope.userId,
+                images:JSON.stringify($scope.imageBox(content)),
                 cover: $scope.cover,
                 title: $scope.title,
                 content: JSON.stringify(content),
@@ -148,9 +148,31 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             })
         };
 
+        $scope.imageBox = function (content) {
+            let box = []
+            content.forEach(function (item) {
+                let _box = []
+                item["children"].forEach(function (_item) {
+                    if (_item["tag"] && _item["tag"] === 'img') {
+                        _item["attrs"].forEach(function (_attr) {
+                            if (_attr["name"] === 'src') {
+                                _box.push(_attr["value"])
+                                _attr["value"] = ""
+                            }
+                            if (_attr["name"] === 'alt') {
+                                _attr["value"] = ""
+                            }
+                        })
+                    }
+                })
+                box.push(_box)
+            })
+            return box
+        }
+
         $scope.$on('$stateChangeStart', function (event, toState, toParams) {
             if (!$scope.sendResult) {
-                if(!$scope.dataSaveConfirm){
+                if (!$scope.dataSaveConfirm) {
                     event.preventDefault();
                     $rootScope.confirm('是否保存草稿？', '保存').then(function (result) {
                         $scope.dataSaveConfirm = true;
