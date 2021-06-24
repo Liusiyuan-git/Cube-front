@@ -54,6 +54,30 @@ app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', 'dat
         })
     };
 
+    $rootScope.cubeLoading = function (text) {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top',
+            showConfirmButton: false,
+            willOpen:function (){
+                Swal.showLoading()
+            },
+            didOpen: (toast) => {
+                toast.style["flex-direction"] = "row-reverse"
+                toast.style["justify-content"] = "flex-end"
+                toast.children[1]["style"]["display"] = "none"
+                toast.children[2]["style"]["flex"] = "unset"
+                toast.children[2]["children"][3]["style"]["width"] = "2em"
+                toast.children[2]["children"][3]["style"]["height"] = "2em"
+                toast.children[2]["children"][3]["style"]["margin"] = "0 0.5em"
+            }
+        })
+        return Toast.fire({
+            icon: Swal.showLoading(),
+            title: text
+        })
+    };
+
     $rootScope.confirm = function (text,yes,no="取消"){
         return Swal.fire({
             title: text,
