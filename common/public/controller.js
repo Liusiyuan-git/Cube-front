@@ -59,7 +59,7 @@ app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', 'dat
             toast: true,
             position: 'top',
             showConfirmButton: false,
-            willOpen:function (){
+            willOpen: function () {
                 Swal.showLoading()
             },
             didOpen: (toast) => {
@@ -78,9 +78,11 @@ app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', 'dat
         })
     };
 
-    $rootScope.confirm = function (text,yes,no="取消"){
+    $rootScope.confirm = function (icon, title, text, yes, no = "取消") {
         return Swal.fire({
-            title: text,
+            icon: icon,
+            title: title,
+            text: text,
             showDenyButton: true,
             showCancelButton: false,
             confirmButtonText: yes,
