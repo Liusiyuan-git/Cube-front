@@ -2,12 +2,12 @@ let app = require("../../app")
 import E from 'wangeditor'
 import "../style/style.scss"
 
-window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService', 'Upload',
-    function ($rootScope, $scope, $state, $timeout, dataService, Upload) {
+window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService', 'Upload', '$q',
+    function ($rootScope, $scope, $state, $timeout, dataService, Upload, $q) {
         $scope.init = function () {
             $scope.cover = null
             $scope.sendResult = null;
-            $scope.dataSaveConfirm = null;
+            $scope.stateJumpConfirm = null;
             $scope.reader = new FileReader();
             $scope.editorInit();
             $scope.scroll()
@@ -20,22 +20,31 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             $scope.editor.config.uploadImgShowBase64 = true
             $scope.editor.config.showLinkImg = false;
             $scope.editor.create()
-            $scope.editorDataSet()
         };
 
         $scope.editorDataSet = function () {
-            let cover = localStorage.getItem('cube-cover');
-            let data = localStorage.getItem('cube-content');
-            let title = localStorage.getItem('cube-title');
-            if (cover) {
-                $scope.cover = cover
-            }
-            if (data) {
-                $scope.editor.txt.setJSON(JSON.parse(data))
-            }
-            if (title) {
-                $scope.title = title
-            }
+            $rootScope.cubeLoading("加载中...")
+            dataService.callOpenApi("get.draft", {cubeid: $rootScope.userId}, "community").then(function (data) {
+                $rootScope.swal.close()
+                if (data.success) {
+                    if (data.content) {
+                        let draft = data.content[0]
+                        let content = JSON.parse(draft.content)
+                        let images = draft.image.split(":")
+                        $scope.imageSet(content, images, draft["cube_id"]).then(function () {
+                            $scope.editor.txt.setJSON(content)
+                        })
+                        if (draft.cover) {
+                            $scope.getImgBase64(["http://47.119.151.14:3001/draft", draft["cube_id"], draft.cover].join("/")).then(function (image) {
+                                $scope.cover = image
+                            })
+                        }
+                        $scope.title = draft.title
+                    }
+                } else {
+                    $rootScope.cubeWarning('error', "草稿获取失败")
+                }
+            })
         };
 
         $scope.upload = function (file) {
@@ -44,29 +53,68 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                 $scope.reader.onload = function (e) {
                     $scope.cover = e.target.result
                     $scope.$apply()
-                    localStorage.setItem('cube-cover', e.target.result);
                 }
             }
         };
 
         $scope.delete = function () {
             $scope.cover = null
-            localStorage.removeItem('cube-cover');
         };
 
         $scope.save = function () {
+            let text = $scope.editor.txt.text()
+            if (text === '' && !$scope.title && !$scope.cover) {
+                $rootScope.cubeWarning('warning', '内容不能为空')
+                return null
+            }
+            if (!$rootScope.userId) {
+                $rootScope.cubeWarning('error', '请先登录')
+                return null
+            }
             let content = $scope.editor.txt.getJSON()
-            localStorage.setItem('cube-content', JSON.stringify(content));
-            localStorage.setItem('cube-title', $scope.title);
-            $rootScope.cubeWarning('success', '草稿保存成功')
+            let params = {
+                cubeid: $rootScope.userId,
+                images: JSON.stringify($scope.imageBox(content)),
+                cover: $scope.cover,
+                title: $scope.title,
+                content: JSON.stringify(content),
+            }
+            $rootScope.swal.fire({
+                title: '保存',
+                text: '草稿保存中，请稍后',
+                iconHtml: '<div class="iconfont icon-save" style="font-size: 40px"></div>',
+                iconColor: '#3fc3ee',
+                didOpen: () => {
+                    $rootScope.swal.showLoading()
+                    dataService.callOpenApi("send.draft", params, "community").then(function (data) {
+                        $rootScope.swal.close()
+                        if (!data.success) {
+                            $rootScope.cubeWarning('error', "保存失败")
+                        } else {
+                            $rootScope.cubeWarning('success', "保存成功", 3000)
+                        }
+                    })
+                }
+            })
         };
 
         $scope.clear = function () {
-            $rootScope.confirm('是否清除全部内容？', '确定').then(function (result) {
+            if (!$rootScope.userId) {
+                $rootScope.cubeWarning('error', '请先登录')
+                return null
+            }
+            $rootScope.confirm('warning', '一鍵清除', '是否清除全部内容？', '确定').then(function (result) {
                 if (result.isConfirmed) {
-                    $scope.allClear()
-                    $rootScope.cubeWarning('success', '内容已全部清除')
-                    $scope.$apply()
+                    dataService.callOpenApi("remove.draft", {"cubeid": $rootScope.userId}, "community").then(function (data) {
+                        $rootScope.swal.close()
+                        if (!data.success) {
+                            $rootScope.cubeWarning('error', "清除失败")
+                        } else {
+                            $scope.allClear()
+                            $rootScope.cubeWarning('success', '内容已全部清除', 3000)
+                            // $scope.$apply()
+                        }
+                    })
                 }
             })
         };
@@ -74,8 +122,6 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
         $scope.allClear = function () {
             $scope.title = null;
             $scope.editor.txt.clear();
-            localStorage.removeItem('cube-content');
-            localStorage.removeItem('cube-title');
             $scope.delete()
         }
         $scope.scroll = function () {
@@ -119,7 +165,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             let content = $scope.editor.txt.getJSON()
             let params = {
                 cubeid: $rootScope.userId,
-                images:JSON.stringify($scope.imageBox(content)),
+                images: JSON.stringify($scope.imageBox(content)),
                 cover: $scope.cover,
                 title: $scope.title,
                 content: JSON.stringify(content),
@@ -133,14 +179,13 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                 didOpen: () => {
                     $rootScope.swal.showLoading()
                     dataService.callOpenApi("send.blog", params, "community").then(function (data) {
-                        $scope.sendResult = data.success
+                        $scope.dataSendConfirm = data.success
                         $rootScope.swal.close()
                         if (!data.success) {
                             $rootScope.cubeWarning('error', data.msg)
                         } else {
                             $rootScope.cubeWarning('success', "发布成功", 3000).then(function () {
-                                // $state.go("home", {state: 'home'});
-                                // $scope.allClear();
+                                $state.go("home", {state: 'home'});
                             })
                         }
                     })
@@ -152,37 +197,95 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             let box = []
             content.forEach(function (item) {
                 let _box = []
-                item["children"].forEach(function (_item) {
-                    if (_item["tag"] && _item["tag"] === 'img') {
-                        _item["attrs"].forEach(function (_attr) {
-                            if (_attr["name"] === 'src') {
-                                _box.push(_attr["value"])
-                                _attr["value"] = ""
-                            }
-                            if (_attr["name"] === 'alt') {
-                                _attr["value"] = ""
-                            }
-                        })
-                    }
-                })
+                if (item["children"]) {
+                    item["children"].forEach(function (_item) {
+                        if (_item["tag"] && _item["tag"] === 'img') {
+                            _item["attrs"].forEach(function (_attr) {
+                                if (_attr["name"] === 'src') {
+                                    _box.push(_attr["value"])
+                                    _attr["value"] = ""
+                                }
+                                if (_attr["name"] === 'alt') {
+                                    _attr["value"] = ""
+                                }
+                            })
+                        }
+                    })
+                }
                 box.push(_box)
             })
             return box
         }
 
-        $scope.$on('$stateChangeStart', function (event, toState, toParams) {
-            if (!$scope.sendResult) {
-                if (!$scope.dataSaveConfirm) {
-                    event.preventDefault();
-                    $rootScope.confirm('是否保存草稿？', '保存').then(function (result) {
-                        $scope.dataSaveConfirm = true;
-                        if (result.isConfirmed) {
-                            $scope.save()
+        $scope.imageSet = function (content, images, cubeid) {
+            let defer = $q.defer()
+            let length = content.length - 1
+            if (images[0] !== "") {
+                content.forEach(function (item) {
+                    item["children"].forEach(function (_item) {
+                        if (_item["tag"] && _item["tag"] === 'img') {
+                            $scope.getImgBase64(["http://47.119.151.14:3001/draft", cubeid, images.shift()].join("/")).then(function (image) {
+                                _item["attrs"].forEach(function (_attr) {
+                                    if (_attr["name"] === 'src') {
+                                        _attr["value"] = image
+                                    }
+                                    if (_attr["name"] === 'alt') {
+                                        _attr["value"] = image
+                                    }
+                                })
+                                if (images.length === 0) {
+                                    defer.resolve()
+                                }
+                            })
                         }
-                        $state.go(toState, toParams);
+                    })
+                })
+            } else {
+                defer.resolve()
+            }
+            return defer.promise;
+        }
+
+        $scope.image2Base64 = function (img, type) {
+            let canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            let ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, img.width, img.height);
+            let dataURL = canvas.toDataURL("image/" + type);
+            return dataURL;
+        }
+
+        $scope.getImgBase64 = function (src) {
+            let defer = $q.defer()
+            let base64 = "";
+            let img = new Image();
+            img.crossOrigin = 'anonymous'
+            let type = src.split(".").pop()
+            img.src = src;
+            img.onload = function () {
+                base64 = $scope.image2Base64(img, type);
+                defer.resolve(base64)
+            }
+            return defer.promise;
+        }
+
+        $scope.$on('$stateChangeStart', function (event, toState, toParams) {
+            if (!$scope.stateJumpConfirm) {
+                if (!$scope.dataSendConfirm) {
+                    event.preventDefault();
+                    $rootScope.confirm('warning', '是否保存草稿？', '已保存的可忽略', '保存').then(function (result) {
+                        if (result.isConfirmed) {
+                            $scope.save().then(function () {
+                                $scope.stateJumpConfirm = true;
+                                $state.go(toState, toParams);
+                            })
+                        } else {
+                            $scope.stateJumpConfirm = true;
+                            $state.go(toState, toParams);
+                        }
                     })
                 }
             }
         })
-
     }])
