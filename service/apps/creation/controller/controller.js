@@ -5,6 +5,10 @@ import "../style/style.scss"
 window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService', 'Upload', '$q',
     function ($rootScope, $scope, $state, $timeout, dataService, Upload, $q) {
         $scope.init = function () {
+            $timeout(function () {
+                let frame = document.getElementById("container");
+                frame.className = "container in";
+            }, 300);
             $scope.cover = null
             $scope.sendResult = null;
             $scope.stateJumpConfirm = null;
@@ -61,15 +65,26 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             $scope.cover = null
         };
 
-        $scope.save = function () {
+        $scope.save = function (mode) {
+            let defer = $q.defer()
             let text = $scope.editor.txt.text()
             if (text === '' && !$scope.title && !$scope.cover) {
                 $rootScope.cubeWarning('warning', '内容不能为空')
-                return null
+                if (mode === "state_jump") {
+                    defer.reject(false)
+                    return defer.promise;
+                } else {
+                    return null
+                }
             }
             if (!$rootScope.userId) {
                 $rootScope.cubeWarning('error', '请先登录')
-                return null
+                if (mode === "state_jump") {
+                    defer.reject(false)
+                    return defer.promise;
+                } else {
+                    return null
+                }
             }
             let content = $scope.editor.txt.getJSON()
             let params = {
@@ -90,15 +105,23 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                         $rootScope.swal.close()
                         if (!data.success) {
                             $rootScope.cubeWarning('error', "保存失败")
+                            defer.reject(false)
                         } else {
                             $rootScope.cubeWarning('success', "保存成功", 3000)
+                            defer.resolve(true)
                         }
                     })
                 }
             })
+            return defer.promise;
         };
 
         $scope.clear = function () {
+            let text = $scope.editor.txt.text()
+            if (text === '' && !$scope.title && !$scope.cover) {
+                $rootScope.cubeWarning('warning', '内容不能为空')
+                return null
+            }
             if (!$rootScope.userId) {
                 $rootScope.cubeWarning('error', '请先登录')
                 return null
@@ -154,7 +177,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                 $rootScope.cubeWarning('warning', '标题长度不超过50')
                 return null
             }
-            if (text === ' ') {
+            if (text === '') {
                 $rootScope.cubeWarning('warning', '内容不能为空')
                 return null
             }
@@ -271,14 +294,20 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
         }
 
         $scope.$on('$stateChangeStart', function (event, toState, toParams) {
-            if (!$scope.stateJumpConfirm) {
+            if ($rootScope.userId && !$scope.stateJumpConfirm) {
                 if (!$scope.dataSendConfirm) {
                     event.preventDefault();
                     $rootScope.confirm('warning', '是否保存草稿？', '已保存的可忽略', '保存').then(function (result) {
                         if (result.isConfirmed) {
-                            $scope.save().then(function () {
-                                $scope.stateJumpConfirm = true;
-                                $state.go(toState, toParams);
+                            $scope.save("state_jump").then(function (result) {
+                                if (result) {
+                                    $scope.stateJumpConfirm = true;
+                                    $state.go(toState, toParams);
+                                } else {
+                                    $scope.$emit("mainMenu")
+                                }
+                            }, function () {
+                                $scope.$emit("mainMenu")
                             })
                         } else {
                             $scope.stateJumpConfirm = true;
