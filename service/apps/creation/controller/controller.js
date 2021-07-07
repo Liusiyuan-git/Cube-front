@@ -28,7 +28,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
 
         $scope.editorDataSet = function () {
             $rootScope.cubeLoading("加载中...")
-            dataService.callOpenApi("get.draft", {cubeid: $rootScope.userId}, "community").then(function (data) {
+            dataService.callOpenApi("get.draft", {cubeid: $rootScope.userId}, "private").then(function (data) {
                 $rootScope.swal.close()
                 if (data.success) {
                     if (data.content) {
@@ -101,7 +101,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                 iconColor: '#3fc3ee',
                 didOpen: () => {
                     $rootScope.swal.showLoading()
-                    dataService.callOpenApi("send.draft", params, "community").then(function (data) {
+                    dataService.callOpenApi("send.draft", params, "private").then(function (data) {
                         $rootScope.swal.close()
                         if (!data.success) {
                             $rootScope.cubeWarning('error', "保存失败")
@@ -128,7 +128,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             }
             $rootScope.confirm('warning', '一鍵清除', '是否清除全部内容？', '确定').then(function (result) {
                 if (result.isConfirmed) {
-                    dataService.callOpenApi("remove.draft", {"cubeid": $rootScope.userId}, "community").then(function (data) {
+                    dataService.callOpenApi("remove.draft", {"cubeid": $rootScope.userId}, "private").then(function (data) {
                         $rootScope.swal.close()
                         if (!data.success) {
                             $rootScope.cubeWarning('error', "清除失败")
@@ -201,11 +201,11 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                 iconColor: '#3fc3ee',
                 didOpen: () => {
                     $rootScope.swal.showLoading()
-                    dataService.callOpenApi("send.blog", params, "community").then(function (data) {
+                    dataService.callOpenApi("send.blog", params, "private").then(function (data) {
                         $scope.dataSendConfirm = data.success
                         $rootScope.swal.close()
                         if (!data.success) {
-                            $rootScope.cubeWarning('error', data.msg)
+                            $rootScope.cubeWarning('error', data.msg || "未知错误")
                         } else {
                             $rootScope.cubeWarning('success', "发布成功", 3000).then(function () {
                                 $state.go("home", {state: 'home'});
