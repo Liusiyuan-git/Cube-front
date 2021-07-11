@@ -3,6 +3,10 @@ import "../style/style.scss"
 
 app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService', function ($rootScope, $scope, $state, $timeout, dataService) {
     $scope.init = function () {
+        $timeout(function () {
+            let frame = document.getElementById("container");
+            frame.className = "container in";
+        }, 300);
         $scope.contentDataGet()
     };
 
@@ -12,12 +16,29 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         })
     };
 
-    $scope.contentDataGet = function (){
-        dataService.callOpenApi("blog.get",{},"community").then(function (data){
-            if(data.success){
+
+    $scope.contentDataGet = function () {
+        $rootScope.cubeLoading("加载中...")
+        dataService.callOpenApi("blog.get", {}, "common").then(function (data) {
+            $rootScope.swal.close()
+            if (data.success) {
+                if (data.content) {
+                    data.content.forEach(function (item) {
+                        let time = item.date.split(" ")[0].split("-").join("")
+                        item.author = item.name
+                        if (item.cover) {
+                            let cover = ["http://47.119.151.14:3001/blog", item["cube_id"], time, item.cover].join("/")
+                            item.cover = cover
+                        }
+                    })
+                }
                 $scope.content = data.content
             }
         })
+    };
+
+    $scope.blog = function (id) {
+        $state.go("blog", {id: id})
     };
 
     $scope.homeMenu = [{
