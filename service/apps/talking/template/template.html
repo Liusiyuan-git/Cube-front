@@ -1,0 +1,31 @@
+<div class="talking" ng-init="init()">
+    <div id="container" class="container">
+        <div class="area">
+            <div class="left-area">
+                <div class="menu">
+                    <div ng-repeat="i in talkingMenu">
+                        <div class="menu-item" ng-class="{'menu-select':i.select}" ng-click="menuSelect(i.key)">{{i.name}}</div>
+                    </div>
+                </div>
+                <div ng-show="talkingMenu[0].select">
+                    <div class="mark">
+                        <div class="word">
+                            <p>分享您此刻的想法😆</p>
+                            <p>也可以分享好玩的段子😘</p>
+                        </div>
+                    </div>
+                </div>
+                <div ng-show="talkingMenu[2].select">
+                    <div class="editor">
+                        <div id="comment-text" class="comment-text text-style"></div>
+                        <div class="menu">
+                            <div id="comment-toolbar" class="comment-toolbar"></div>
+                            <div class="button" ng-click="commentSend()">{{"发布"}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="height: 50px;width: 100%"></div>
+</div>

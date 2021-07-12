@@ -1,0 +1,70 @@
+@import "../../../../common/styles/common.color";
+
+.talking {
+  padding-top: 70px;
+  min-height: 90vh;
+
+  .container {
+    width: 1200px;
+    margin: 0 auto;
+    opacity: 0;
+
+    .area {
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+
+      .left-area {
+        width: 74%;
+
+        .menu {
+          height: 50px;
+          border-bottom: 1px solid $color-gray-400;
+          display: flex;
+          align-items: center;
+          border-radius: 6px;
+          background: $color-white;
+          box-shadow: 0 1px 3px rgb(18 18 18 / 10%);
+
+          .menu-item {
+            padding: 0 15px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+          }
+
+          .menu-select {
+            color: $color-high-light;
+          }
+        }
+
+        .mark {
+          border-bottom: 1px solid $color-gray-400;
+          display: flex;
+          align-items: center;
+          margin: 10px 0;
+          border-radius: 6px;
+          background: $color-white;
+          box-shadow: 0 1px 3px rgb(18 18 18 / 10%);
+
+          .word {
+            padding: 5px 20px;
+            font-size: 15px;
+            color: #999;
+          }
+        }
+
+
+      }
+    }
+  }
+
+  .container.in {
+    -webkit-transition: all 5.5s;
+    -moz-transition: all 1.5s;
+    -ms-transition: all 1.5s;
+    -o-transition: all 1.5s;
+    transition: all 1.5s;
+    opacity: 1;
+  }
+}
