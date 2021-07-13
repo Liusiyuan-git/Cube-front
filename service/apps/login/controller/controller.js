@@ -125,7 +125,7 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
                 dataService.callOpenApi("user.login", params, "login").then(function (data) {
                     $rootScope.swal.close()
                     if (!data.success) {
-                        $rootScope.cubeWarning('error', data.msg)
+                        $rootScope.cubeWarning('error', data.msg || "未知错误")
                     } else {
                         $rootScope.userId = data['cubeId']
                         $rootScope.login = true;
