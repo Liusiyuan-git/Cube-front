@@ -10,8 +10,20 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             frame.className = "container in";
         }, 300);
         $scope.talkEditorInit()
-        // $scope.contentDataGet()
+        $scope.talkDataGet()
     };
+
+    $scope.talkDataGet = function () {
+        $rootScope.cubeLoading("加载中...")
+        dataService.callOpenApi("talk.get", {}, "common").then(function (data) {
+            $rootScope.swal.close()
+            if (!data.success) {
+                $rootScope.cubeWarning('error', data.msg || "未知错误")
+            } else {
+                $scope.talkData = data.content
+            }
+        })
+    }
 
     $scope.menuSelect = function (key) {
         $scope.talkingMenu.forEach(function (item) {
@@ -44,6 +56,9 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         }, 'private').then(function (data) {
             if (data.success) {
                 $rootScope.cubeWarning('success', '发布成功')
+                $scope.menuSelect("new")
+                $scope.talkDataGet()
+
             } else {
                 $rootScope.cubeWarning('error', data.msg || '发布出错')
             }
