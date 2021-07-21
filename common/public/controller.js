@@ -18,7 +18,7 @@ app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', 'dat
         $rootScope.swal = Swal;
         $rootScope.userId = null;
         $rootScope.login = false;
-        $scope.wait = false
+        $scope.wait = false;
     };
 
     $rootScope.showWaiting = function () {
