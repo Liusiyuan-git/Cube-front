@@ -193,6 +193,7 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
             } else {
                 $rootScope.cubeWarning('error', data.msg || "未知错误");
             }
+            $scope.rocket()
         })
     };
 
