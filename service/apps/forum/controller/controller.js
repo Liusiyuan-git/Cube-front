@@ -20,9 +20,44 @@ window.app.controller("forumCtrl", ["$rootScope", "$scope", "$state", "$timeout"
         };
 
         $scope.filterChildSelect = function (i) {
-            $scope.currentFilter.child.forEach(function (item){
+            $scope.currentFilter.child.forEach(function (item) {
                 item.select = item.key === i.key
             })
+        };
+
+        $scope.contentDataGet = function (mode = "all", page = "1") {
+            $rootScope.cubeLoading("加载中...")
+            dataService.callOpenApi("forum.blog.get", {"mode": mode, "page": page}, "common").then(function (data) {
+                $rootScope.swal.close()
+                if (data.success) {
+                    if (data.content) {
+                        data.content.forEach(function (item) {
+                            let time = item.date.split(" ")[0].split("-").join("")
+                            item.author = item.name
+                            if (item.cover) {
+                                let cover = ["http://47.119.151.14:3001/blog", item["cube_id"], time, item.cover].join("/")
+                                item.cover = cover
+                            }
+                        })
+                    }
+                    $scope.content = data.content
+                    $scope.current_page = parseInt(page)
+                    $scope.pageCreate(data)
+                    $scope.page_created = true
+                }
+            })
+        };
+
+        $scope.pageCreate = function (data) {
+            $("#PageCount").val(data.length);
+            $("#PageSize").val(10);
+            if(!$scope.page_created){
+                $rootScope.loadpage(function (num, type) {
+                    if( num !== $scope.current_page){
+                        $scope.contentDataGet("all", "" + num)
+                    }
+                })
+            }
         };
 
         $scope.forumBlock = [{
@@ -71,27 +106,4 @@ window.app.controller("forumCtrl", ["$rootScope", "$scope", "$state", "$timeout"
             "name": "虚拟化",
             "select": false
         }]
-
-        $scope.contentDataGet = function (mode = "new") {
-            $rootScope.cubeLoading("加载中...")
-            dataService.callOpenApi("blog.get", {"mode": mode}, "common").then(function (data) {
-                $rootScope.swal.close()
-                if (data.success) {
-                    if (data.content) {
-                        data.content.forEach(function (item) {
-                            let time = item.date.split(" ")[0].split("-").join("")
-                            item.author = item.name
-                            if (item.cover) {
-                                let cover = ["http://47.119.151.14:3001/blog", item["cube_id"], time, item.cover].join("/")
-                                item.cover = cover
-                            }
-                        })
-                    }
-                    $scope.content = data.content
-                    $("#PageCount").val("10");
-                    $("#PageSize").val("5");
-                    $rootScope.loadpage()
-                }
-            })
-        };
     }])
