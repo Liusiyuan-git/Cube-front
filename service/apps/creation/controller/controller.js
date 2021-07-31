@@ -26,6 +26,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             $scope.editor.create()
         };
 
+
         $scope.editorDataSet = function () {
             $rootScope.cubeLoading("加载中...")
             dataService.callOpenApi("get.draft", {cubeid: $rootScope.userId}, "private").then(function (data) {
@@ -316,5 +317,52 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                     })
                 }
             }
-        })
+        });
+
+        $scope.label = [{
+            "key": "all",
+            "name": "全部",
+            "select": true
+        }, {
+            "key": "language",
+            "name": "语言",
+            "child": [{
+                "key": "all",
+                "name": "all",
+                "select": true
+            }, {
+                "key": "Python",
+                "name": "Python",
+                "select": false
+            }, {
+                "key": "Go",
+                "name": "Go",
+                "select": false
+            }, {
+                "key": "Java",
+                "name": "Java",
+                "select": false
+            }, {
+                "key": "JavaScript",
+                "name": "JavaScript++",
+                "select": false
+            }, {
+                "key": "C++",
+                "name": "C++",
+                "select": false
+            }, {
+                "key": "C",
+                "name": "C",
+                "select": false
+            }],
+            "select": false
+        }, {
+            "key": "middleware",
+            "name": "中间件",
+            "select": false
+        }, {
+            "key": "Virtualization",
+            "name": "虚拟化",
+            "select": false
+        }]
     }])
