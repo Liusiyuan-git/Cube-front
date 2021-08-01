@@ -11,6 +11,7 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
     };
 
     $scope.selectAndGo = function (state) {
+        console.log(111111)
         $scope.menu_list.forEach(function (item) {
             item.select = item.state === state
         })
@@ -77,21 +78,21 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
         select: true
     }, {
         id: 1,
+        key: "forum",
+        name: "江湖",
+        state: "forum",
+        select: false
+    },{
+        id: 2,
         key: "talking",
         name: "随便说说",
         state: "talking",
         select: false
     }, {
-        id: 2,
+        id: 3,
         key: "creation",
         name: "我要发表",
         state: "creation",
-        select: false
-    }, {
-        id: 3,
-        key: "characteristic",
-        name: "站长私房菜",
-        state: "characteristic",
         select: false
     }, {
         id: 4,
@@ -102,12 +103,12 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
     }];
 
     $scope.user_menu_list = [{
-        id: 0,
+        id: 5,
         key: "profile",
         name: "我的主页",
         icon: "icon-user"
     }, {
-        id: 1,
+        id: 6,
         key: "setting",
         name: "设置",
         icon: "icon-setting-fill"

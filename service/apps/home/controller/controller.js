@@ -10,10 +10,27 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         $scope.contentDataGet()
         $scope.cubeInformationGet()
         $scope.cubeViewGet()
+        $scope.scroll()
         $timeout(function () {
             $scope.collectionGet()
         }, 500)
         $scope.cubetest = [1, 2, 3, 4, 5]
+    };
+
+    $scope.rocket = function () {
+        document.documentElement.scrollIntoView({block: 'start', behavior: 'smooth'})
+    };
+
+    $scope.scroll = function () {
+        let body = document.getElementById("cube-body")
+        let rocket = document.getElementById("rocket")
+        body.onscroll = function () {
+            let scrollT = document.documentElement.scrollTop;
+            rocket.style.display = "flex"
+            if (70 - scrollT >= 0) {
+                rocket.style.display = "none"
+            }
+        };
     };
 
     $scope.echarts = function (count) {

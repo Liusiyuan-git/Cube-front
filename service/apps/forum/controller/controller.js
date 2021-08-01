@@ -4,12 +4,31 @@ import "../style/style.scss"
 window.app.controller("forumCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService', 'Upload', '$q',
     function ($rootScope, $scope, $state, $timeout, dataService, Upload, $q) {
         $scope.init = function () {
-            $timeout(function () {
-                let frame = document.getElementById("container");
-                frame.className = "container in";
-            }, 300);
+            $scope.currentFilter = $scope.forumBlock[0]
+                $timeout(function () {
+                    let frame = document.getElementById("container");
+                    frame.className = "container in";
+                }, 300);
             $scope.filterSelect($scope.forumBlock[0])
             $scope.contentDataGet()
+            $scope.scroll()
+        };
+
+        $scope.scroll = function () {
+            let body = document.getElementById("cube-body")
+            let rocket = document.getElementById("rocket")
+            body.onscroll = function () {
+                let scrollT = document.documentElement.scrollTop;
+                rocket.style.display = "flex"
+                if (70 - scrollT >= 0) {
+                    rocket.style.display = "none"
+                }
+            };
+        };
+
+        $scope.rocket = function () {
+            console.log(11111)
+            document.documentElement.scrollIntoView({block: 'start', behavior: 'smooth'})
         };
 
         $scope.filterSelect = function (i) {
@@ -40,6 +59,7 @@ window.app.controller("forumCtrl", ["$rootScope", "$scope", "$state", "$timeout"
                             }
                         })
                     }
+                    $scope.rocket()
                     $scope.content = data.content
                     $scope.current_page = parseInt(page)
                     $scope.pageCreate(data)
@@ -51,9 +71,9 @@ window.app.controller("forumCtrl", ["$rootScope", "$scope", "$state", "$timeout"
         $scope.pageCreate = function (data) {
             $("#PageCount").val(data.length);
             $("#PageSize").val(10);
-            if(!$scope.page_created){
+            if (!$scope.page_created) {
                 $rootScope.loadpage(function (num, type) {
-                    if( num !== $scope.current_page){
+                    if (num !== $scope.current_page) {
                         $scope.contentDataGet("all", "" + num)
                     }
                 })
@@ -63,7 +83,36 @@ window.app.controller("forumCtrl", ["$rootScope", "$scope", "$state", "$timeout"
         $scope.forumBlock = [{
             "key": "all",
             "name": "全部",
-            "select": true
+            "select": true,
+            "child": [{
+                "key": "all",
+                "name": "all",
+                "select": true
+            }, {
+                "key": "Python",
+                "name": "Python",
+                "select": false
+            }, {
+                "key": "Go",
+                "name": "Go",
+                "select": false
+            }, {
+                "key": "Java",
+                "name": "Java",
+                "select": false
+            }, {
+                "key": "JavaScript",
+                "name": "JavaScript++",
+                "select": false
+            }, {
+                "key": "C++",
+                "name": "C++",
+                "select": false
+            }, {
+                "key": "C",
+                "name": "C",
+                "select": false
+            }],
         }, {
             "key": "language",
             "name": "语言",
