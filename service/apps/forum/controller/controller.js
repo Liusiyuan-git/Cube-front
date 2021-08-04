@@ -85,8 +85,8 @@ window.app.controller("forumCtrl", ["$rootScope", "$scope", "$state", "$timeout"
             "name": "全部",
             "select": true,
             "child": [{
-                "key": "all",
-                "name": "all",
+                "key": "All",
+                "name": "All",
                 "select": true
             }, {
                 "key": "Python",
