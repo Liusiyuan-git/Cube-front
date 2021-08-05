@@ -7,14 +7,30 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
             let frame = document.getElementById("container");
             frame.className = "container in";
         }, 300);
-        $scope.contentDataGet()
-        $scope.cubeInformationGet()
-        $scope.cubeViewGet()
-        $scope.scroll()
+        $scope.initParams()
+        $scope.filterSelect($scope.forumBlock[0]);
+        $scope.contentDataGet();
+        $scope.scroll();
         $timeout(function () {
             $scope.collectionGet()
-        }, 500)
-        $scope.cubetest = [1, 2, 3, 4, 5]
+        }, 500);
+    };
+
+    $scope.initParams = function (){
+        $scope.currentMenu = $scope.homeMenu[0].key
+    };
+
+    $scope.filterSelect = function (i) {
+        $scope.forumBlock.forEach(function (item) {
+            item.select = i.key === item.key
+        })
+        $scope.currentFilter = i
+    };
+
+    $scope.filterChildSelect = function (i) {
+        $scope.currentFilter.child.forEach(function (item) {
+            item.select = item.key === i.key
+        })
     };
 
     $scope.rocket = function () {
@@ -33,45 +49,13 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         };
     };
 
-    $scope.echarts = function (count) {
-        let echarts = require("echarts/dist/echarts")
-        let month = (new Date()).getMonth() + 1;
-        let chartElement = document.getElementById('active-echarts')
-        chartElement.style.height = JSON.stringify(chartElement.clientWidth) + "px"
-        let myChart = echarts.init(chartElement);
-
-        let option = {
-            title: {
-                text: '每月访问量'
-            },
-            tooltip: {},
-            xAxis: {
-                data: [month - 5, month - 4, month - 3, month - 2, month - 1, month]
-            },
-            yAxis: {},
-            series: [{
-                name: '访问数',
-                type: 'line',
-                color: ['#03a9f4'],
-                data: [count[0], count[1], count[2], count[3], count[4], count[5]]
-            }]
-        };
-        myChart.setOption(option);
-    }
 
     $scope.menuSelect = function (key) {
         $scope.homeMenu.forEach(function (item) {
             item.select = item.key === key
         })
+        $scope.currentMenu = key;
         $scope.contentDataGet(key)
-    };
-
-    $scope.cubeInformationGet = function () {
-        dataService.callOpenApi("cube.information.get", {}, "common").then(function (data) {
-            if (data.success) {
-                $scope.cubeInformation = data.content
-            }
-        })
     };
 
     $scope.collectionGet = function () {
@@ -85,17 +69,9 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         })
     };
 
-    $scope.cubeViewGet = function () {
-        dataService.callOpenApi("cube.view.get", {}, "common").then(function (data) {
-            if (data.success) {
-                $scope.echarts(data.content)
-            }
-        })
-    };
-
-    $scope.contentDataGet = function (mode = "new") {
+    $scope.contentDataGet = function (mode = "new", page = 1) {
         $rootScope.cubeLoading("加载中...")
-        dataService.callOpenApi("blog.get", {"mode": mode}, "common").then(function (data) {
+        dataService.callOpenApi("blog.get", {"mode": mode, "page": page + ""}, "common").then(function (data) {
             $rootScope.swal.close()
             if (data.success) {
                 if (data.content) {
@@ -108,12 +84,25 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
                         }
                     })
                 }
+                $scope.rocket()
                 $scope.content = data.content
-                // $("#PageCount").val("10");
-                // $("#PageSize").val("5");
-                // $rootScope.loadpage()
+                $scope.current_page = parseInt(page)
+                $scope.pageCreate(data)
+                $scope.page_created = true
             }
         })
+    };
+
+    $scope.pageCreate = function (data) {
+        $("#PageCount").val(data.length);
+        $("#PageSize").val(10);
+        if (!$scope.page_created) {
+            $rootScope.loadpage(function (num, type) {
+                if (num !== $scope.current_page) {
+                    $scope.contentDataGet($scope.currentMenu, num)
+                }
+            })
+        }
     };
 
     $scope.collectionSelect = function (id) {
@@ -126,15 +115,99 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
 
     $scope.homeMenu = [{
         key: "new",
-        name: "最新",
+        name: "最近更新",
         select: true
     }, {
         key: "hot",
-        name: "最热",
+        name: "点赞最多",
         select: false
     }, {
-        key: "follow",
-        name: "关注",
+        key: "collect",
+        name: "收藏最多",
         select: false
+    }, {
+        key: "comment",
+        name: "评论最多",
+        select: false
+    }, {
+        key: "view",
+        name: "浏览最多",
+        select: false
+    }];
+
+    $scope.forumBlock = [{
+        "key": "all",
+        "name": "全部",
+        "select": true,
+        "child": [{
+            "key": "All",
+            "name": "All",
+            "select": true
+        }, {
+            "key": "Python",
+            "name": "Python",
+            "select": false
+        }, {
+            "key": "Go",
+            "name": "Go",
+            "select": false
+        }, {
+            "key": "Java",
+            "name": "Java",
+            "select": false
+        }, {
+            "key": "JavaScript",
+            "name": "JavaScript++",
+            "select": false
+        }, {
+            "key": "C++",
+            "name": "C++",
+            "select": false
+        }, {
+            "key": "C",
+            "name": "C",
+            "select": false
+        }],
+    }, {
+        "key": "language",
+        "name": "语言",
+        "child": [{
+            "key": "all",
+            "name": "all",
+            "select": true
+        }, {
+            "key": "Python",
+            "name": "Python",
+            "select": false
+        }, {
+            "key": "Go",
+            "name": "Go",
+            "select": false
+        }, {
+            "key": "Java",
+            "name": "Java",
+            "select": false
+        }, {
+            "key": "JavaScript",
+            "name": "JavaScript++",
+            "select": false
+        }, {
+            "key": "C++",
+            "name": "C++",
+            "select": false
+        }, {
+            "key": "C",
+            "name": "C",
+            "select": false
+        }],
+        "select": false
+    }, {
+        "key": "middleware",
+        "name": "中间件",
+        "select": false
+    }, {
+        "key": "Virtualization",
+        "name": "虚拟化",
+        "select": false
     }]
 }])

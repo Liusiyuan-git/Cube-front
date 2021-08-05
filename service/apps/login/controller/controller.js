@@ -27,7 +27,7 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
                 $rootScope.userId = data["cubeId"];
                 $rootScope.login = true;
                 $rootScope.cubeWarning('success', '登录成功', 3000).then(function () {
-                    $state.go("home",{state:'home'});
+                    $state.go("forum",{state:'forum'});
                 })
             }
         })
