@@ -11,7 +11,6 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
     };
 
     $scope.selectAndGo = function (state) {
-        console.log(111111)
         $scope.menu_list.forEach(function (item) {
             item.select = item.state === state
         })
@@ -72,20 +71,20 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
 
     $scope.menu_list = [{
         id: 0,
-        key: "home_page",
+        key: "home",
         name: "首页",
         state: "home",
         select: true
-    }, {
+    },{
         id: 1,
         key: "forum",
-        name: "江湖",
+        name: "首页",
         state: "forum",
         select: false
     },{
         id: 2,
         key: "talking",
-        name: "随便说说",
+        name: "江湖",
         state: "talking",
         select: false
     }, {
