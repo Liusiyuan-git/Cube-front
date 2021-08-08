@@ -22,6 +22,7 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         $scope.editor.config.uploadImgMaxSize = 2 * 1024 * 1024;
         $scope.editor.config.uploadImgShowBase64 = true;
         $scope.editor.config.showLinkImg = false;
+        $scope.editor.config.fontSizes = "17"
         $scope.editor.create();
         $scope.editor.disable();
     };
@@ -48,12 +49,16 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
                     let date = blog.date.split(" ")[0].split("-").join("")
                     let love = parseInt(data.content[0]["love"])
                     let collect = parseInt(data.content[0]["collect"])
+                    let comment = parseInt(data.content[0]["comment"])
+                    let cover = ["http://47.119.151.14:3001/blog", data.content[0]["cube_id"], date, data.content[0]["cover"]].join("/")
                     $scope.imageSet(content, images, blog["cube_id"], date).then(function () {
                         $scope.editor.txt.setJSON(content);
                     })
                     $scope.content = data.content[0];
                     $scope.content["love"] = love;
                     $scope.content["collect"] = collect;
+                    $scope.content["cover"] = cover;
+                    $scope.content["comment"] = comment;
                     $scope.blogCollectConfirm()
                     $scope.commentGet()
                 }
@@ -62,7 +67,7 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     };
 
     $scope.blogCollectConfirm = function () {
-        if (!$rootScope.userId) {
+        if (!$scope.loginStatusCheck()) {
             return null
         }
         dataService.callOpenApi("blog.collect.confirm", {
@@ -133,9 +138,9 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         let star = document.getElementById("star");
         let container = document.getElementById("container");
         let rocket = document.getElementById("rocket");
-        like.style.left = container.offsetLeft + 950 + "px";
-        star.style.left = container.offsetLeft + 950 + "px";
-        rocket.style.left = container.offsetLeft + 950 + "px";
+        like.style.right = container.offsetLeft + 50 + "px";
+        star.style.right = container.offsetLeft + 50 + "px";
+        rocket.style.right = container.offsetLeft + 50 + "px";
         body.onscroll = function () {
             let scrollT = document.documentElement.scrollTop;
             rocket.style.display = "flex";
@@ -161,7 +166,7 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     };
 
     $scope.collect = function () {
-        if (!$rootScope.userId) {
+        if (!$scope.loginStatusCheck()) {
             $rootScope.cubeWarning('error', '请先登录')
             return null
         }
@@ -184,21 +189,51 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         })
     };
 
-    $scope.commentGet = function () {
+    $scope.commentGet = function (page = 1) {
         dataService.callOpenApi("blog.comment.get", {
             id: $state.params.id,
+            page: page + ""
         }, "common").then(function (data) {
             if (data.success) {
                 $scope.comment = data.comment
+                $scope.content["comment"] = parseInt(data.length)
+                $scope.current_page = page
+                $scope.pageCreate(data)
+                $scope.page_created = true
             } else {
                 $rootScope.cubeWarning('error', data.msg || "未知错误");
             }
-            $scope.rocket()
+        })
+    };
+
+    $scope.pageCreate = function (data) {
+        $("#PageCount").val(data.length);
+        $("#PageSize").val(10);
+        if (!$scope.page_created) {
+            $rootScope.loadpage(function (num, type) {
+                if (num !== $scope.current_page) {
+                    $scope.commentGet(num)
+                }
+            })
+        }
+    };
+
+    $scope.commentLike = function (item) {
+        item["love"] = 1 + parseInt(item["love"])
+        dataService.callOpenApi("blog.comment.like", {
+            id: item.id,
+            like: JSON.stringify(item["love"])
+        }, "common").then(function (data) {
+            if (data.success) {
+                $rootScope.cubeWarning('success', "点赞+1 😄");
+            } else {
+                $rootScope.cubeWarning('error', data.msg || "未知错误");
+            }
         })
     };
 
     $scope.commentSend = function () {
-        if (!$rootScope.userId) {
+        if (!$scope.loginStatusCheck()) {
             $rootScope.cubeWarning('error', '请先登录')
             return null
         }
@@ -210,11 +245,13 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         dataService.callOpenApi("blog.comment.send", {
             id: $state.params.id,
             cubeid: $rootScope.userId,
-            comment: comment
+            comment: comment,
+            commentNum: JSON.stringify($scope.content["comment"] + 1)
         }, "private").then(function (data) {
             if (data.success) {
                 $scope.commentEditor.txt.clear();
                 $scope.commentGet()
+                $rootScope.cubeWarning('success', "发表成功");
             } else {
                 $rootScope.cubeWarning('error', data.msg || "未知错误");
             }

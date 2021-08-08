@@ -4,19 +4,27 @@ import "../style/style.scss"
 app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService',
     function ($rootScope, $scope, $state, $timeout, dataService) {
         $scope.initCommunity = function () {
-            $rootScope.cubelocation = "community"
-            $scope.loginStatusCheck()
+            $rootScope.cubelocation = "community";
+            $scope.loginStatusCheck();
         };
 
         $scope.loginStatusCheck = function () {
-            if (!$rootScope.login) {
-                $rootScope.loginStatusCheck().then(function (data) {
-                    if (data.success) {
-                        $rootScope.userId = data["cubeId"];
-                        $rootScope.login = true;
-                        $scope.rabbitmq()
-                    }
-                })
+            let starttime = parseInt(localStorage.getItem("setLoginStartTime"));
+            let currenttime = (Date.parse(new Date())) / 1000;
+            let second = Math.floor(currenttime - starttime);
+            if (second <= 86400) {
+                $rootScope.userId = localStorage.getItem("CubeId");
+                $rootScope.userName = localStorage.getItem("userName");
+                $rootScope.login = true;
+                return true
+            } else {
+                localStorage.removeItem('setLoginStartTime');
+                localStorage.removeItem('CubeId');
+                localStorage.removeItem("userName");
+                $rootScope.userId = ""
+                $rootScope.userName = ""
+                $rootScope.login = false;
+                return false
             }
         };
 
