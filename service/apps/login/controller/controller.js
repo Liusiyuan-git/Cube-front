@@ -22,16 +22,25 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
     };
 
     $scope.loginStatusCheck = function () {
-        $rootScope.loginStatusCheck().then(function (data){
-            if (data.success){
-                $rootScope.userId = data["cubeId"];
-                $rootScope.login = true;
-                $rootScope.cubeWarning('success', '登录成功', 3000).then(function () {
-                    $state.go("forum",{state:'forum'});
-                })
-            }
-        })
-    }
+        let starttime = parseInt(localStorage.getItem("setLoginStartTime"))
+        let currenttime = (Date.parse(new Date())) / 1000
+        let second = Math.floor(currenttime - starttime);
+        if (second <= 86400) {
+            $rootScope.userId = localStorage.getItem("CubeId")
+            $rootScope.userName = localStorage.getItem("userName")
+            $rootScope.login = true;
+            $rootScope.cubeWarning('success', '登录成功', 3000).then(function () {
+                $state.go("home", {state: 'home'});
+            })
+        } else {
+            localStorage.removeItem('setLoginStartTime')
+            localStorage.removeItem('CubeId')
+            localStorage.removeItem("userName")
+            $rootScope.userId = ""
+            $rootScope.userName = ""
+            $rootScope.login = false;
+        }
+    };
 
     $scope.change = function (index) {
         $scope.login = $scope.box[index]
@@ -70,7 +79,7 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
     };
 
     $scope.visitorMod = function () {
-        $state.go("home",{state:'home'});
+        $state.go("home", {state: 'home'});
     };
 
     $scope.getCode = function () {
@@ -128,15 +137,24 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
                         $rootScope.cubeWarning('error', data.msg || "未知错误")
                     } else {
                         $rootScope.userId = data['cubeId']
+                        $rootScope.userName = data['userName']
                         $rootScope.login = true;
+                        $scope.setLoginStartTime(data)
                         $rootScope.cubeWarning('success', "登录成功", 3000).then(function () {
-                            $state.go("home",{state:'home'});
+                            $state.go("home", {state: 'home'});
                         })
                     }
                 })
             }
         })
-    }
+    };
+
+    $scope.setLoginStartTime = function (data) {
+        let date = (Date.parse(new Date())) / 1000
+        localStorage.setItem("setLoginStartTime", date);
+        localStorage.setItem("CubeId", data['cubeId'])
+        localStorage.setItem("userName", data['userName'])
+    };
 
     $scope.passwordForget = function () {
         let phone

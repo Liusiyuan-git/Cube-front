@@ -86,7 +86,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
                 }
                 $scope.rocket()
                 $scope.content = data.content
-                $scope.current_page = parseInt(page)
+                $scope.current_page = page
                 $scope.pageCreate(data)
                 $scope.page_created = true
             }
@@ -110,7 +110,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     };
 
     $scope.blog = function (id) {
-        $state.go("blog", {id: id})
+        window.open("http://127.0.0.1:3000/#!/main/community/blog?id=" + id)
     };
 
     $scope.homeMenu = [{
