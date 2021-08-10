@@ -47,6 +47,12 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
             } else {
                 $rootScope.cubeWarning("error", "未知错误", "5000")
             }
+            localStorage.removeItem('setLoginStartTime')
+            localStorage.removeItem('CubeId')
+            localStorage.removeItem("userName")
+            $rootScope.userId = ""
+            $rootScope.userName = ""
+            $rootScope.login = false;
         })
     };
 

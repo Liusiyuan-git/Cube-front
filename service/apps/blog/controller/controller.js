@@ -218,11 +218,13 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         }
     };
 
-    $scope.commentLike = function (item) {
+    $scope.commentLike = function (item, index) {
         item["love"] = 1 + parseInt(item["love"])
         dataService.callOpenApi("blog.comment.like", {
             id: item.id,
-            like: JSON.stringify(item["love"])
+            blogid: $scope.content["id"],
+            like: JSON.stringify(item["love"]),
+            index: index + ""
         }, "common").then(function (data) {
             if (data.success) {
                 $rootScope.cubeWarning('success', "点赞+1 😄");
