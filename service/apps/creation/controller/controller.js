@@ -150,16 +150,12 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
         }
         $scope.scroll = function () {
             let body = document.getElementById("cube-body")
-            let option = document.getElementById("right-area")
             let rocket = document.getElementById("rocket")
             body.onscroll = function () {
                 let scrollT = document.documentElement.scrollTop;
                 rocket.style.display = "flex"
                 if (70 - scrollT >= 0) {
-                    option.style.top = (70 - scrollT) + "px";
                     rocket.style.display = "none"
-                } else {
-                    option.style.top = "5px"
                 }
             };
         };
