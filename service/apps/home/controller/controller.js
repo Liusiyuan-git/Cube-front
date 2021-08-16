@@ -7,8 +7,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
             let frame = document.getElementById("container");
             frame.className = "container in";
         }, 300);
-        $scope.initParams()
-        $scope.filterSelect($scope.forumBlock[0]);
+        $scope.initParams();
         $scope.contentDataGet();
         $scope.scroll();
         $timeout(function () {
@@ -16,21 +15,26 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         }, 500);
     };
 
-    $scope.initParams = function (){
-        $scope.currentMenu = $scope.homeMenu[0].key
+    $scope.initParams = function () {
+        $scope.currentMenu = $scope.homeMenu[0].key;
+        $scope.currentFilter = $scope.forumBlock[0];
+        $scope.currentFilterChild = $scope.forumBlock[0].child[0]
     };
 
     $scope.filterSelect = function (i) {
         $scope.forumBlock.forEach(function (item) {
             item.select = i.key === item.key
         })
-        $scope.currentFilter = i
+        $scope.currentFilter = i;
+        $scope.filterChildSelect($scope.currentFilter.child[0])
     };
 
     $scope.filterChildSelect = function (i) {
         $scope.currentFilter.child.forEach(function (item) {
             item.select = item.key === i.key
         })
+        $scope.currentFilterChild = i;
+        $scope.contentDataGet($scope.currentMenu)
     };
 
     $scope.rocket = function () {
@@ -71,9 +75,14 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
 
     $scope.contentDataGet = function (mode = "new", page = 1) {
         $rootScope.cubeLoading("加载中...")
-        dataService.callOpenApi("blog.get", {"mode": mode, "page": page + ""}, "common").then(function (data) {
+        dataService.callOpenApi("blog.get", {
+            "mode": mode,
+            "page": page + "",
+            "label": $scope.currentFilter.key,
+            "label_type": $scope.currentFilterChild.key
+        }, "common").then(function (data) {
             $rootScope.swal.close()
-            if (data.success) {
+            if (data.success && data.length) {
                 if (data.content) {
                     data.content.forEach(function (item) {
                         let time = item.date.split(" ")[0].split("-").join("")
@@ -89,6 +98,8 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
                 $scope.current_page = page
                 $scope.pageCreate(data)
                 $scope.page_created = true
+            } else {
+                $scope.content = null
             }
         })
     };
@@ -115,57 +126,69 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
 
     $scope.homeMenu = [{
         key: "new",
-        name: "最近更新",
+        name: "最新发布",
         select: true
     }, {
         key: "hot",
-        name: "点赞最多",
-        select: false
-    }, {
-        key: "collect",
-        name: "收藏最多",
-        select: false
-    }, {
-        key: "comment",
-        name: "评论最多",
-        select: false
-    }, {
-        key: "view",
-        name: "浏览最多",
+        name: "按热度排序",
         select: false
     }];
 
     $scope.forumBlock = [{
-        "key": "all",
+        "key": "",
         "name": "全部",
         "select": true,
         "child": [{
-            "key": "All",
+            "key": "",
             "name": "All",
             "select": true
         }, {
-            "key": "Python",
+            "key": "python",
             "name": "Python",
             "select": false
         }, {
-            "key": "Go",
+            "key": "go",
             "name": "Go",
             "select": false
         }, {
-            "key": "Java",
+            "key": "java",
             "name": "Java",
             "select": false
         }, {
-            "key": "JavaScript",
+            "key": "javaScript",
             "name": "JavaScript++",
             "select": false
         }, {
-            "key": "C++",
+            "key": "c++",
             "name": "C++",
             "select": false
         }, {
-            "key": "C",
+            "key": "c",
             "name": "C",
+            "select": false
+        }, {
+            "key": "redis",
+            "name": "Redis",
+            "select": false
+        }, {
+            "key": "rabbitmq",
+            "name": "Rabbitmq",
+            "select": false
+        }, {
+            "key": "docker",
+            "name": "Docker",
+            "select": false
+        }, {
+            "key": "kubernetes",
+            "name": "kubernetes",
+            "select": false
+        }, {
+            "key": "mysql",
+            "name": "Mysql",
+            "select": false
+        }, {
+            "key": "live",
+            "name": "生活",
             "select": false
         }],
     }, {
@@ -173,30 +196,30 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         "name": "语言",
         "child": [{
             "key": "all",
-            "name": "all",
+            "name": "All",
             "select": true
         }, {
-            "key": "Python",
-            "name": "Python",
+            "key": "python",
+            "name": "python",
             "select": false
         }, {
-            "key": "Go",
+            "key": "go",
             "name": "Go",
             "select": false
         }, {
-            "key": "Java",
+            "key": "java",
             "name": "Java",
             "select": false
         }, {
-            "key": "JavaScript",
+            "key": "javaScript",
             "name": "JavaScript++",
             "select": false
         }, {
-            "key": "C++",
+            "key": "c++",
             "name": "C++",
             "select": false
         }, {
-            "key": "C",
+            "key": "c",
             "name": "C",
             "select": false
         }],
@@ -204,10 +227,62 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     }, {
         "key": "middleware",
         "name": "中间件",
-        "select": false
+        "select": false,
+        "child": [{
+            "key": "all",
+            "name": "All",
+            "select": true
+        }, {
+            "key": "redis",
+            "name": "Redis",
+            "select": false
+        }, {
+            "key": "rabbitmq",
+            "name": "Rabbitmq",
+            "select": false
+        }]
     }, {
-        "key": "Virtualization",
+        "key": "virtualization",
         "name": "虚拟化",
-        "select": false
+        "select": false,
+        "child": [{
+            "key": "all",
+            "name": "All",
+            "select": true
+        }, {
+            "key": "docker",
+            "name": "Docker",
+            "select": false
+        }, {
+            "key": "kubernetes",
+            "name": "kubernetes",
+            "select": false
+        }]
+    }, {
+        "key": "database",
+        "name": "数据库",
+        "select": false,
+        "child": [{
+            "key": "all",
+            "name": "All",
+            "select": true
+        }, {
+            "key": "mysql",
+            "name": "Mysql",
+            "select": false
+        }]
+    }, {
+        "key": "other",
+        "name": "其他",
+        "select": false,
+        "child": [{
+            "key": "all",
+            "name": "All",
+            "select": true
+        }, {
+            "key": "live",
+            "name": "生活",
+            "select": false
+        }]
     }]
 }])

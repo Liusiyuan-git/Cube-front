@@ -12,6 +12,8 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             $scope.cover = null
             $scope.sendResult = null;
             $scope.stateJumpConfirm = null;
+            $scope.currentMark = $scope.mark[0];
+            $scope.currentMarkChild = $scope.currentMark.child[0]
             $scope.reader = new FileReader();
             $scope.editorInit();
             $scope.scroll()
@@ -24,6 +26,22 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             $scope.editor.config.uploadImgShowBase64 = true
             $scope.editor.config.showLinkImg = false;
             $scope.editor.create()
+        };
+
+        $scope.sendMenu = function (e) {
+            let element = document.getElementById("send-menu")
+            if (element) {
+                element.style.display = "inline";
+            }
+            e.stopPropagation();
+        };
+
+        document.onclick = function (e) {
+            let element = document.getElementById("send-menu")
+            if (element) {
+                element.style.display = "none";
+            }
+            e.stopPropagation();
         };
 
 
@@ -189,7 +207,9 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                 cover: $scope.cover,
                 title: $scope.title,
                 content: JSON.stringify(content),
-                text: text.replace(/&nbsp;/g, "")
+                text: text.replace(/&nbsp;/g, ""),
+                label: $scope.currentMark["key"],
+                labeltype: $scope.currentMarkChild["key"]
             }
             $rootScope.swal.fire({
                 title: '发布',
@@ -315,50 +335,102 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             }
         });
 
-        $scope.label = [{
-            "key": "all",
-            "name": "全部",
-            "select": true
-        }, {
+        $scope.markSelect = function (i, event) {
+            $scope.currentMark = i
+            $scope.currentMarkChild = i.child[0]
+            $scope.mark.forEach(function (item) {
+                if (item.key === i.key) {
+                    item.select = true
+                    item.child.forEach(function (_item) {
+                        _item.select = _item.key === i.child[0].key
+                    })
+                } else {
+                    item.select = false
+                }
+            })
+            event.stopPropagation();
+        };
+
+        $scope.markChildSelect = function (i, event) {
+            $scope.currentMarkChild = i;
+            $scope.currentMark.child.forEach(function (item) {
+                item.select = item.key === i.key
+            })
+            event.stopPropagation();
+        };
+
+        $scope.mark = [{
             "key": "language",
             "name": "语言",
             "child": [{
-                "key": "all",
-                "name": "all",
-                "select": true
-            }, {
-                "key": "Python",
+                "key": "python",
                 "name": "Python",
-                "select": false
+                "select": true,
             }, {
-                "key": "Go",
+                "key": "go",
                 "name": "Go",
                 "select": false
             }, {
-                "key": "Java",
+                "key": "java",
                 "name": "Java",
                 "select": false
             }, {
-                "key": "JavaScript",
-                "name": "JavaScript++",
+                "key": "javaScript",
+                "name": "JavaScript",
                 "select": false
             }, {
-                "key": "C++",
+                "key": "c++",
                 "name": "C++",
                 "select": false
             }, {
-                "key": "C",
+                "key": "c",
                 "name": "C",
                 "select": false
             }],
-            "select": false
+            "select": true
         }, {
             "key": "middleware",
             "name": "中间件",
-            "select": false
+            "select": false,
+            "child": [{
+                "key": "redis",
+                "name": "Redis",
+                "select": true
+            }, {
+                "key": "rabbitmq",
+                "name": "Rabbitmq",
+                "select": false
+            }]
         }, {
-            "key": "Virtualization",
+            "key": "virtualization",
             "name": "虚拟化",
-            "select": false
+            "select": false,
+            "child": [{
+                "key": "docker",
+                "name": "Docker",
+                "select": true
+            }, {
+                "key": "kubernetes",
+                "name": "kubernetes",
+                "select": false
+            }]
+        }, {
+            "key": "database",
+            "name": "数据库",
+            "select": false,
+            "child": [{
+                "key": "mysql",
+                "name": "Mysql",
+                "select": true
+            }]
+        }, {
+            "key": "other",
+            "name": "其他",
+            "select": false,
+            "child": [{
+                "key": "live",
+                "name": "生活",
+                "select": true
+            }]
         }]
     }])
