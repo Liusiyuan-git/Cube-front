@@ -43,6 +43,7 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
             $scope.detailGetSuccess = data.success;
             if (data.success) {
                 if (data.content) {
+                    console.log(1111)
                     let blog = data.content[0];
                     let content = JSON.parse(blog.content);
                     let images = blog.image.split(":");

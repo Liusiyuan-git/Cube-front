@@ -297,6 +297,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
         }
 
         $scope.getImgBase64 = function (src) {
+            console.log(src)
             let defer = $q.defer()
             let base64 = "";
             let img = new Image();

@@ -42,8 +42,8 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     };
 
     $scope.scroll = function () {
-        let body = document.getElementById("cube-body")
-        let rocket = document.getElementById("rocket")
+        let body = document.getElementById("cube-body");
+        let rocket = document.getElementById("rocket");
         body.onscroll = function () {
             let scrollT = document.documentElement.scrollTop;
             rocket.style.display = "flex"
@@ -68,13 +68,28 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         }
         dataService.callOpenApi("cube.collection.get", {"cubeid": $rootScope.userId}, "private").then(function (data) {
             if (data.success) {
-                $scope.cubeCollection = data.content
+                $scope.cubeCollection = data.content;
+                if (data.content.length > 5) {
+                    $scope.collect_up = false;
+                    $scope.intervalId = setInterval($scope.collectBlockTransform, 3000)
+                }
             }
         })
     };
 
+    $scope.collectBlockTransform = function () {
+        let element = document.getElementById("collect-content-block")
+        if (!$scope.collect_up) {
+            element.style.transform = "translate3d(0px, -180px, 0px)";
+            $scope.collect_up = true
+        } else {
+            element.style.transform = "translate3d(0px, 0px, 0px)";
+            $scope.collect_up = false
+        }
+    }
+
     $scope.contentDataGet = function (mode = "new", page = 1) {
-        $rootScope.cubeLoading("加载中...")
+        $rootScope.cubeLoading("加载中...");
         dataService.callOpenApi("blog.get", {
             "mode": mode,
             "page": page + "",
@@ -93,11 +108,11 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
                         }
                     })
                 }
-                $scope.rocket()
-                $scope.content = data.content
-                $scope.current_page = page
-                $scope.pageCreate(data)
-                $scope.page_created = true
+                $scope.rocket();
+                $scope.content = data.content;
+                $scope.current_page = page;
+                $scope.pageCreate(data);
+                $scope.page_created = true;
             } else {
                 $scope.content = null
             }
@@ -133,6 +148,10 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         name: "按热度排序",
         select: false
     }];
+
+    $scope.$on('$stateChangeStart', function (event, toState, toParams) {
+        clearInterval($scope.intervalId)
+    });
 
     $scope.forumBlock = [{
         "key": "",
