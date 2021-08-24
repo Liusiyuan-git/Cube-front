@@ -83,24 +83,18 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
         select: true
     },{
         id: 1,
-        key: "forum",
-        name: "首页",
-        state: "forum",
-        select: false
-    },{
-        id: 2,
         key: "talking",
         name: "江湖",
         state: "talking",
         select: false
     }, {
-        id: 3,
+        id: 2,
         key: "creation",
         name: "我要发表",
         state: "creation",
         select: false
     }, {
-        id: 4,
+        id: 3,
         key: "about",
         name: "关于Cube",
         state: "about",
@@ -108,12 +102,12 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
     }];
 
     $scope.user_menu_list = [{
-        id: 5,
+        id: 0,
         key: "profile",
         name: "我的主页",
         icon: "icon-user"
     }, {
-        id: 6,
+        id: 1,
         key: "setting",
         name: "设置",
         icon: "icon-setting-fill"

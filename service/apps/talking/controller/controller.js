@@ -3,14 +3,19 @@ import E from "wangeditor";
 let app = require("../../app")
 import "../style/style.scss"
 
-app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService', function ($rootScope, $scope, $state, $timeout, dataService) {
+app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService', "$q", function ($rootScope, $scope, $state, $timeout, dataService, $q) {
     $scope.init = function () {
+        $scope.initParams();
         $timeout(function () {
             let frame = document.getElementById("container");
             frame.className = "container in";
         }, 300);
-        $scope.talkEditorInit()
-        $scope.talkDataGet()
+        $scope.talkEditorInit();
+        $scope.talkDataGet();
+    };
+
+    $scope.initParams = function () {
+        $scope.talkImages = []
     };
 
     $scope.talkDataGet = function () {
@@ -34,10 +39,65 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     $scope.talkEditorInit = function () {
         $scope.talkEditor = new E('#talk-toolbar', '#talk-text');
         $scope.talkEditor.config.height = 1200;
+        $scope.talkEditor.config.placeholder = '分享点学习、工作、生活的新鲜事'
         $scope.talkEditor.config.menus = [
-            'emoticon'
-        ]
+            'emoticon', 'image'
+        ];
+        $scope.talkEditor.config.uploadImgMaxLength = 3;
+        $scope.talkEditor.config.customUploadImg = function (resultFiles, insertImgFn) {
+            console.log($scope.talkImages.length)
+            if ($scope.talkImages.length >= 3) {
+                $rootScope.cubeWarning('info', "上传图片不得超过3张");
+            } else {
+                $scope.getImgBase64(resultFiles)
+            }
+        }
+        $scope.talkEditor.config.showLinkImg = false
+
+        $scope.talkEditor.config.customAlert = function (s, t) {
+            switch (t) {
+                case 'success':
+                    $rootScope.cubeWarning('success', s);
+                    break
+                case 'info':
+                    $rootScope.cubeWarning('info', s);
+                    break
+                case 'warning':
+                    $rootScope.cubeWarning('warning', s);
+                    break
+                case 'error':
+                    $rootScope.cubeWarning('error', s);
+                    break
+                default:
+                    $rootScope.cubeWarning('info', s);
+                    break
+            }
+        }
         $scope.talkEditor.create();
+    };
+
+    $scope.imageDelete = function (index) {
+        $scope.talkImages.splice(index,1)
+    };
+
+    $scope.image2Base64 = function (img, type) {
+        let canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        let ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+        let dataURL = canvas.toDataURL("image/" + type);
+        return dataURL;
+    };
+
+    $scope.getImgBase64 = function (file) {
+        let reader = new FileReader();
+        reader.readAsDataURL(file[0]);
+        reader.onload = function (e) {
+            $scope.talkImages.push(e.target.result);
+            console.log($scope.talkImages)
+            $scope.$apply()
+        }
     };
 
     $scope.talkCommentSend = function (id, item) {
@@ -81,7 +141,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                 item.commentData = data.content
             }
         })
-    }
+    };
 
     $scope.talkSend = function () {
         let text = $scope.talkEditor.txt.text()
@@ -165,16 +225,16 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.talkingMenu = [{
-        key: "new",
-        name: "动态",
+        key: "all",
+        name: "全部",
         select: true
     }, {
-        key: "care",
-        name: "关注",
+        key: "hot",
+        name: "精华",
         select: false
     }, {
-        key: "talk",
-        name: "树洞",
+        key: "concern",
+        name: "关注",
         select: false
     }]
 }])
