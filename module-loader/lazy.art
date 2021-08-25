@@ -1,0 +1,56 @@
+var loader = function () {
+    return new Promise(function(resolve){
+        require.ensure([], function () {
+            {{each require}}require("{{$value}}");
+            {{/each}}
+            resolve({
+                {{each templates}}"{{$value}}":require("{{$value}}"),
+                {{/each}}
+            });
+        }, "{{module_name}}");
+    });
+};
+
+var get_template_provider=function(_template){
+  return function () {
+     return new Promise(function (resolve) {
+        return loader().then(function (_module) {
+           resolve(_module[_template]);
+        });
+     });
+  };
+};
+
+var _resolve={
+   "moduleLoader": ["$ocLazyLoad", function ($ocLazyLoad) {
+      return new Promise(function (resolve) {
+         return loader().then(function (_module) {
+            $ocLazyLoad.load({
+               "name": "myApp"
+            });
+            resolve();
+         });
+      });
+   }]
+};
+
+var $states_function=function ($stateProvider) {
+{{each states}}
+  $stateProvider.state("{{$value['name']}}", {
+     "name": "{{$value['name']}}",
+     {{if $value['url']}}"url": "{{$value['url']}}",{{/if}}
+     {{if $value['parent']}}"parent": "{{$value['parent']}}",{{/if}}
+     {{if $value['controller']}}"controller": "{{$value['controller']}}",{{/if}}
+     {{if $value['role']}}"role": "{{$value['role']}}",{{/if}}
+     {{if $value['sideBar']}}"sideBar": true,{{/if}}
+     {{if $value['abstract']}}"abstract": true,{{/if}}
+     {{if $value['template']}}"template": "{{$value['template']}}",{{/if}}
+     {{if $value['desc']}}"desc": "{{$value['desc']}}",{{/if}}
+     {{if $value['breadcrumbs_parent']}}"breadcrumbs_parent": "{{$value['breadcrumbs_parent']}}",{{/if}}
+     {{if $value['templateUrl']}}"templateProvider": get_template_provider("{{$value['templateUrl']}}"),{{/if}}
+     "resolve": _resolve
+  });
+{{/each}}
+};
+
+module.exports = $states_function;
