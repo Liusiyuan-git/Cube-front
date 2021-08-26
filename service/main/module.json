@@ -1,0 +1,11 @@
+{
+  "name": "enter.auth",
+  "app_name": "myApp",
+  "states":[{
+    "name": "main",
+    "url": "/main",
+    "controller": "mainCtrl",
+    "templateUrl": "./template/template.html",
+    "require": "./controller/controller.js"
+  }]
+}
