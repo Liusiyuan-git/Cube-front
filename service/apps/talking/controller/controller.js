@@ -215,7 +215,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.talkCommentEditorCreate = function () {
-        $scope.talkCommentEditor = new E('#talk-comment-toolbar');
+        $scope.talkCommentEditor = new E('#talk-comment-toolbar',"#talk-comment-text");
         $scope.talkCommentEditor.config.menus = [
             'emoticon'
         ]
