@@ -1,0 +1,19 @@
+{
+  "name": "module-loader",
+  "version": "2.0.1",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tjsums/module-loader.git"
+  },
+  "author": "HCM",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tjsums/module-loader/issues"
+  },
+  "homepage": "https://github.com/tjsums/module-loader#readme",
+  "dependencies": {
+    "art-template": "^4.13.2",
+    "loader-utils": "^1.1.0"
+  }
+}
