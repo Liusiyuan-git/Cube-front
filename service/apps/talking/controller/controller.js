@@ -220,7 +220,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             'emoticon'
         ]
         $scope.talkCommentEditor.config.showFullScreen = false
-        $scope.talkCommentEditor.config.height = 100;
+        $scope.talkCommentEditor.config.height = 33;
         $scope.talkCommentEditor.create();
     };
 
