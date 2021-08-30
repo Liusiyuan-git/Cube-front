@@ -15,9 +15,10 @@
     padding: 6px 12px;
     line-height: 1.42857143;
     text-decoration: none;
-    color: #03a9f4;
+    color: #4c4c4c;
     background-color: #fff;
-    border: 1px solid #ddd;
+    font-size: 13px;
+    font-weight: 500;
     margin-left: -1px
 }
 
@@ -33,16 +34,11 @@
 }
 
 .pagination > li > a:hover, .pagination > li > span:hover, .pagination > li > a:focus, .pagination > li > span:focus {
-    color: #2a6496;
-    background-color: #eee;
-    border-color: #ddd
 }
 
 .pagination > .active > a, .pagination > .active > span, .pagination > .active > a:hover, .pagination > .active > span:hover, .pagination > .active > a:focus, .pagination > .active > span:focus {
     z-index: 2;
-    color: #fff;
-    background-color: #03a9f4;
-    border-color: #03a9f4;
+    color: #03a9f4;
     cursor: default
 }
 

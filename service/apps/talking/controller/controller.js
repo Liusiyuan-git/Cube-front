@@ -15,25 +15,49 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.initParams = function () {
-        $scope.talkImages = []
+        $scope.talkImages = [];
+        $scope.currentTalkingMenu = $scope.talkingMenu[0];
+        $scope.talkCommentLength = 0;
     };
 
-    $scope.talkDataGet = function () {
+    $scope.talkDataGet = function (mode = "new", page = 1) {
         $rootScope.cubeLoading("加载中...")
-        dataService.callOpenApi("talk.get", {}, "common").then(function (data) {
+        dataService.callOpenApi("talk.get", {
+            "mode": $scope.currentTalkingMenu["key"],
+            "page": page + "",
+        }, "common").then(function (data) {
             $rootScope.swal.close()
             if (!data.success) {
                 $rootScope.cubeWarning('error', data.msg || "未知错误")
             } else {
-                $scope.talkData = data.content
+                $scope.talkData = data.content;
+                $scope.current_page = page;
+                $scope.pageCreate(data);
+                $scope.page_created = true;
             }
         })
-    }
+    };
+
+    $scope.pageCreate = function (data) {
+        $("#PageCount").val(data.length);
+        $("#PageSize").val(10);
+        if (!$scope.page_created) {
+            $rootScope.loadpage(function (num, type) {
+                if (num !== $scope.current_page) {
+                    $scope.talkDataGet($scope.currentTalkingMenu["key"], num)
+                }
+            })
+        }
+    };
 
     $scope.menuSelect = function (key) {
         $scope.talkingMenu.forEach(function (item) {
+            if (item.key === key) {
+                $scope.currentTalkingMenu = item
+            }
             item.select = item.key === key
         })
+        $scope.talkDataGet()
     };
 
     $scope.talkEditorInit = function () {
@@ -77,7 +101,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.imageDelete = function (index) {
-        $scope.talkImages.splice(index,1)
+        $scope.talkImages.splice(index, 1)
     };
 
     $scope.image2Base64 = function (img, type) {
@@ -95,12 +119,11 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         reader.readAsDataURL(file[0]);
         reader.onload = function (e) {
             $scope.talkImages.push(e.target.result);
-            console.log($scope.talkImages)
             $scope.$apply()
         }
     };
 
-    $scope.talkCommentSend = function (id, item) {
+    $scope.talkCommentSend = function (id, item, index) {
         item.comment = parseInt(item.comment) + 1
         let text = $scope.talkCommentEditor.txt.text()
         if (text === '') {
@@ -113,8 +136,10 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         }
         dataService.callOpenApi('send.talk.comment', {
             id: id,
+            index: index + "",
             cubeid: $rootScope.userId,
             text: text,
+            mode: $scope.currentTalkingMenu["key"],
             comment: JSON.stringify(item.comment)
         }, 'private').then(function (data) {
             if (data.success) {
@@ -132,13 +157,15 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     $scope.talkCommentGet = function (id, item) {
         $rootScope.cubeLoading("加载中...")
         dataService.callOpenApi("talk.comment.get", {
-            id: id
+            id: id,
+            page: "1"
         }, "common").then(function (data) {
             $rootScope.swal.close()
             if (!data.success) {
                 $rootScope.cubeWarning('error', data.msg || "未知错误")
             } else {
-                item.commentData = data.content
+                item.commentData = data.content;
+                item.comment = data.length;
             }
         })
     };
@@ -159,7 +186,6 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         }, 'private').then(function (data) {
             if (data.success) {
                 $rootScope.cubeWarning('success', '发布成功')
-                $scope.talkDataGet()
                 $scope.menuSelect("new")
             } else {
                 $rootScope.cubeWarning('error', data.msg || '发布出错')
@@ -168,16 +194,17 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         })
     };
 
-    $scope.talkLike = function (id, item) {
+    $scope.talkLike = function (id, item, index) {
         item.love = parseInt(item.love) + 1
         dataService.callOpenApi('talk.like', {
             id: id,
+            index: index + "",
+            mode: $scope.currentTalkingMenu["key"],
             like: JSON.stringify(item.love)
         }, 'common').then(function (data) {
             if (!data.success) {
                 $rootScope.cubeWarning('error', data.msg || '未知錯誤')
             }
-
         })
     };
 
@@ -215,7 +242,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.talkCommentEditorCreate = function () {
-        $scope.talkCommentEditor = new E('#talk-comment-toolbar',"#talk-comment-text");
+        $scope.talkCommentEditor = new E('#talk-comment-toolbar', "#talk-comment-text");
         $scope.talkCommentEditor.config.menus = [
             'emoticon'
         ]
@@ -225,8 +252,8 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.talkingMenu = [{
-        key: "all",
-        name: "全部",
+        key: "new",
+        name: "最新",
         select: true
     }, {
         key: "hot",
