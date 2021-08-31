@@ -94,15 +94,15 @@ app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', 'dat
         })
     };
 
-    $rootScope.loadpage = function (f) {
-        let myPageCount = parseInt($("#PageCount").val());
-        let myPageSize = parseInt($("#PageSize").val());
+    $rootScope.loadpage = function (f, index = "") {
+        let myPageCount = parseInt($("#PageCount" + index).val());
+        let myPageSize = parseInt($("#PageSize" + index).val());
         let countindex = myPageCount % myPageSize > 0 ? (myPageCount / myPageSize) + 1 : (myPageCount / myPageSize);
-        $("#countindex").val(countindex);
+        $("#countindex" + index).val(countindex);
 
-        $.jqPaginator('#pagination', {
-            totalPages: parseInt($("#countindex").val()),
-            visiblePages: parseInt($("#visiblePages").val()),
+        $.jqPaginator('#pagination' + index, {
+            totalPages: parseInt($("#countindex" + index).val()),
+            visiblePages: parseInt($("#visiblePages" + index).val()),
             currentPage: 1,
             first: '<li class="first"><a href="javascript:;">首页</a></li>',
             prev: '<li class="prev"><a href="javascript:;"><i class="arrow arrow2"></i>上一页</a></li>',

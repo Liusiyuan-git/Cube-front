@@ -69,7 +69,6 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         ];
         $scope.talkEditor.config.uploadImgMaxLength = 3;
         $scope.talkEditor.config.customUploadImg = function (resultFiles, insertImgFn) {
-            console.log($scope.talkImages.length)
             if ($scope.talkImages.length >= 3) {
                 $rootScope.cubeWarning('info', "上传图片不得超过3张");
             } else {
@@ -154,11 +153,11 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         })
     };
 
-    $scope.talkCommentGet = function (id, item) {
+    $scope.talkCommentGet = function (id, item, index, page = 1) {
         $rootScope.cubeLoading("加载中...")
         dataService.callOpenApi("talk.comment.get", {
             id: id,
-            page: "1"
+            page: page + ""
         }, "common").then(function (data) {
             $rootScope.swal.close()
             if (!data.success) {
@@ -166,8 +165,25 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             } else {
                 item.commentData = data.content;
                 item.comment = data.length;
+                $timeout(function () {
+                    $scope.talk_comment_current_page = page;
+                    $scope.talkCommentPageCreate(data, id, item, index);
+                    $scope.talk_comment_page_created = true;
+                }, 500)
             }
         })
+    };
+
+    $scope.talkCommentPageCreate = function (data, id, item, index) {
+        $("#PageCount" + index).val(data.length);
+        $("#PageSize" + index).val(10);
+        if (!$scope.talk_comment_page_created) {
+            $rootScope.loadpage(function (num, type) {
+                if (num !== $scope.talk_comment_current_page) {
+                    $scope.talkCommentGet(id, item, index, num)
+                }
+            }, index)
+        }
     };
 
     $scope.talkSend = function () {
@@ -228,14 +244,14 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         })
     };
 
-    $scope.talkComment = function (id, item) {
-        $scope.talkCommentGet(id, item)
+    $scope.talkComment = function (id, item, index) {
+        $scope.talkData.forEach(function (item) {
+            item.select = item.id === id
+        });
+        $scope.talkCommentGet(id, item, index);
         if ($scope.talkCommentEditor) {
             $scope.talkCommentEditor.destroy()
         }
-        $scope.talkData.forEach(function (item) {
-            item.select = item.id === id
-        })
         $timeout(function () {
             $scope.talkCommentEditorCreate()
         }, 50)
