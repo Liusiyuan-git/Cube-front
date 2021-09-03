@@ -18,6 +18,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         $scope.talkImages = [];
         $scope.currentTalkingMenu = $scope.talkingMenu[0];
         $scope.talkCommentLength = 0;
+        $scope.talkCommentBlockShow = false;
     };
 
     $scope.talkDataGet = function (mode = "new", page = 1) {
@@ -169,15 +170,17 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                     $scope.talk_comment_current_page = page;
                     $scope.talkCommentPageCreate(data, id, item, index);
                     $scope.talk_comment_page_created = true;
+                    $scope.talkCommentBlockShow = false;
                 }, 500)
             }
         })
     };
 
     $scope.talkCommentPageCreate = function (data, id, item, index) {
+        console.log(11111)
         $("#PageCount" + index).val(data.length);
         $("#PageSize" + index).val(10);
-        if (!$scope.talk_comment_page_created) {
+        if (!$scope.talk_comment_page_created || $scope.talkCommentBlockShow) {
             $rootScope.loadpage(function (num, type) {
                 if (num !== $scope.talk_comment_current_page) {
                     $scope.talkCommentGet(id, item, index, num)
@@ -198,7 +201,8 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         }
         dataService.callOpenApi('send.talk', {
             cubeid: $rootScope.userId,
-            text: text
+            text: text,
+            images: $scope.talkImages.length > 0 ? JSON.stringify($scope.talkImages) : JSON.stringify([])
         }, 'private').then(function (data) {
             if (data.success) {
                 $rootScope.cubeWarning('success', '发布成功')
@@ -245,6 +249,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.talkComment = function (id, item, index) {
+        $scope.talkCommentBlockShow = true;
         $scope.talkData.forEach(function (item) {
             item.select = item.id === id
         });

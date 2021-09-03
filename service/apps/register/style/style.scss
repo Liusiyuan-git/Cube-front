@@ -1,0 +1,217 @@
+@import "../../../../common/styles/common.color";
+
+.register-image {
+  width: 100%;
+}
+
+.register-mask {
+  position: absolute;
+  top: 55px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $color-white;
+  opacity: 0.6;
+}
+
+.register-window {
+  position: absolute;
+  z-index: 10;
+  left: 0;
+  right: 0;
+  margin: auto;
+  top: 55px;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+
+  .register-title {
+    margin: 20px 0;
+    width: 590px;
+    text-align: center;
+    font-size: 32px;
+    font-weight: 400;
+  }
+
+  .register-dialog {
+    width: 500px;
+    height: 624px;
+    border-color: rgba(228, 228, 228, 1);
+    border-radius: 0;
+    box-shadow: 0 8px 16px 0 rgb(0 0 0 / 10%);
+    background-color: $color-white;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
+    .wrong-message{
+      position: absolute;
+      top: 0;
+      margin: 15px;
+      right: 0;
+      color: $color-red;
+      font-size: 12px;
+    }
+
+    .register-dialog-title {
+      width: 500px;
+      height: 72px;
+      border-bottom: #e5e5e5 1px solid;
+      position: relative;
+      background-color: $color-white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .title-word {
+        font-weight: 400;
+        font-size: 18px;
+      }
+    }
+
+    .email-block {
+      padding-top: 40px;
+      width: 420px;
+      margin-bottom: 20px;
+
+      .email-input-block {
+        font-size: 14px;
+        margin-bottom: 20px;
+        position: relative;
+
+        .email-input {
+          font-size: 14px;
+          height: 45px;
+          width: 100%;
+          display: inline-block;
+          border: 1px solid #e5e5e5;
+          color: #333;
+          vertical-align: middle;
+          padding: 13px 10px 12px;
+          box-sizing: border-box;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          appearance: none;
+          border-radius: 0;
+        }
+
+        .email-input:focus {
+          border-color: $color-high-light;
+          outline: 0;
+        }
+
+        .email-input-wrong{
+          border-color: $color-red;
+        }
+
+        .email-input-wrong:focus{
+          border-color: $color-red;
+        }
+      }
+    }
+
+    .phone-block {
+      width: 420px;
+      margin-bottom: 20px;
+
+      .phone-title {
+        color: #999;
+        font-size: 14px;
+        line-height: 20px;
+        text-align: center;
+        position: relative;
+        margin-bottom: 20px;
+
+        .title {
+          display: inline-block;
+          background-color: #fff;
+          padding: 0 20px;
+          z-index: 2;
+        }
+      }
+
+      .phone-input-block {
+        font-size: 14px;
+        margin-bottom: 20px;
+        position: relative;
+
+        .input-block{
+          position: relative;
+        }
+
+        .verification {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 45%;
+          color: $color-high-light;
+          background: white;
+          border: 1px solid $color-high-light;
+          cursor: pointer;
+        }
+
+        .verification-disable {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 45%;
+          cursor: pointer;
+        }
+
+        .phone-input {
+          font-size: 14px;
+          height: 45px;
+          width: 100%;
+          display: inline-block;
+          border: 1px solid #e5e5e5;
+          color: #333;
+          vertical-align: middle;
+          padding: 13px 10px 12px;
+          box-sizing: border-box;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          appearance: none;
+          border-radius: 0;
+        }
+
+        .phone-input:focus {
+          border-color: $color-high-light;
+          outline: 0;
+        }
+
+        .phone-input-wrong{
+          border-color: $color-red;
+        }
+
+        .phone-input-wrong:focus{
+          border-color: $color-red;
+        }
+      }
+
+      .phone-title:after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 1px;
+        background-color: #e5e5e5;
+        top: 50%;
+        left: 0;
+        z-index: 1;
+      }
+    }
+
+    .register-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 45px;
+      width: 420px;
+      font-size: 14px;
+      background-color: $color-high-light;
+      border-radius: 2px;
+      color: $color-white;
+      cursor: pointer;
+    }
+  }
+}
