@@ -2,6 +2,8 @@ import E from "wangeditor";
 
 let app = require("../../app")
 import "../style/style.scss"
+import 'viewerjs/dist/viewer.css';
+import Viewer from 'viewerjs';
 
 app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService', "$q", function ($rootScope, $scope, $state, $timeout, dataService, $q) {
     $scope.init = function () {
@@ -32,11 +34,48 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                 $rootScope.cubeWarning('error', data.msg || "未知错误")
             } else {
                 $scope.talkData = data.content;
+                $scope.talkImagesSet(data.content);
                 $scope.current_page = page;
                 $scope.pageCreate(data);
                 $scope.page_created = true;
             }
         })
+    };
+
+    $scope.talkImagesSet = function (content) {
+        $scope.talkImagesBlock = {};
+        content.forEach(function (item) {
+            let time = item.date.split(" ")[0].split("-").join("")
+            if (item.images) {
+                item.images.split(":").forEach(function (image) {
+                    let link = ["http://47.119.151.14:3001/talk", item["cube_id"], time, image].join("/")
+                    if (!$scope.talkImagesBlock[item["id"]]) {
+                        $scope.talkImagesBlock[item["id"]] = [link]
+                    } else {
+                        $scope.talkImagesBlock[item["id"]].push(link)
+                    }
+                });
+            }
+        });
+    };
+
+    $scope.talkImagesClick = function (image) {
+        const viewer = new Viewer(document.getElementById(image), {
+            navbar: false,
+            title: false,
+            keyboard: false,
+            zIndex: 20000,
+            toolbar: {
+                zoomIn: 4,
+                zoomOut: 4,
+                reset: 4,
+                rotateLeft: 4,
+                rotateRight: 4,
+                flipHorizontal: 4,
+                flipVertical: 4,
+            },
+        });
+        viewer.show()
     };
 
     $scope.pageCreate = function (data) {
@@ -76,8 +115,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                 $scope.getImgBase64(resultFiles)
             }
         }
-        $scope.talkEditor.config.showLinkImg = false
-
+        $scope.talkEditor.config.showLinkImg = false;
         $scope.talkEditor.config.customAlert = function (s, t) {
             switch (t) {
                 case 'success':

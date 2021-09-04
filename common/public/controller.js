@@ -4,13 +4,10 @@ import "../component/page/jquery-1.7.2.min"
 import "../component/page/jqPaginator.min"
 import "../component/page/myPage.css"
 import "../component/page/bootstrap.min.css"
-// import 'sweetalert2/src/sweetalert2.scss'
-//import Swal from 'sweetalert2'
 import "../styles/common.color.scss"
 import "../../resources/icon/iconfont.css"
 import "../styles/common.scss"
 import "../styles/common.alert.scss"
-import Cookies from 'js-cookie'
 
 app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', 'dataService', function ($rootScope, $scope, $state, $q, dataService) {
     $scope.init = function () {
