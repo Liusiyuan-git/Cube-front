@@ -1,5 +1,6 @@
 let app = require("../app")
 import "../style/style.scss"
+import "jscroll"
 
 app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataService", function ($rootScope, $scope, $state, $timeout, dataService) {
     $scope.init = function () {
