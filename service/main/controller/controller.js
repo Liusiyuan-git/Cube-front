@@ -65,6 +65,11 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
         $state.go("home", {state: "home"})
     };
 
+    $scope.profile = function (){
+        localStorage.setItem("profileId",$rootScope.userId);
+        window.open("http://127.0.0.1:3000/#!/main/community/profile?state=profile")
+    };
+
     $rootScope.$on('$stateChangeSuccess', function () {
         $scope.select($state.params.state)
     });
@@ -106,7 +111,8 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
         id: 0,
         key: "profile",
         name: "我的主页",
-        icon: "icon-user"
+        icon: "icon-user",
+        func: $scope.profile
     }, {
         id: 1,
         key: "setting",
