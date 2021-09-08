@@ -57,5 +57,12 @@
     "controller": "forumCtrl",
     "templateUrl": "./forum/template/template.html",
     "require": "./forum/controller/controller.js"
+  },{
+    "name": "profile",
+    "url": "/profile?state",
+    "parent": "community",
+    "controller": "profileCtrl",
+    "templateUrl": "./profile/template/template.html",
+    "require": "./profile/controller/controller.js"
   }]
 }
