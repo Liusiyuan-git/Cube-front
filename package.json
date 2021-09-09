@@ -46,6 +46,7 @@
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
     "clean-webpack-plugin": "^3.0.0",
+    "cropperjs": "^1.5.12",
     "crypto-browserify": "^3.12.0",
     "css-loader": "^5.1.0",
     "echarts": "^5.1.2",
@@ -59,6 +60,7 @@
     "https-browserify": "^1.0.0",
     "jquery": "^1.7.2",
     "js-cookie": "^2.2.1",
+    "jscroll": "^2.4.1",
     "loader-utils": "^1.1.0",
     "moment": "^2.29.1",
     "net-browserify": "^0.2.4",
@@ -78,6 +80,7 @@
     "url": "^0.11.0",
     "url-loader": "^4.1.1",
     "util": "^0.12.4",
+    "viewerjs": "^1.10.1",
     "wangeditor": "^4.7.1",
     "webpack-env": "^0.8.0"
   },

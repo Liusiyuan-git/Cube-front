@@ -51,9 +51,8 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     $scope.uploadImg = function () {
         document.querySelector('#imgReader').click()
         document.querySelector('#imgReader').addEventListener('change', function (eve) {
-
-            //读取上传文件
-            console.log("nnnnnn")
+            let image = document.getElementById('user-image-dialog');
+            image.style.display = "flex";
             let reader = new FileReader();
             if (eve.target.files[0]) {
 
