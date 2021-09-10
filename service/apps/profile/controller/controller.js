@@ -68,8 +68,8 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                     $scope.CROPPER = new Cropper(image, {
                         aspectRatio: 16 / 16,
                         viewMode: 0,
-                        minContainerWidth: 500,
-                        minContainerHeight: 500,
+                        minContainerWidth: 50,
+                        minContainerHeight: 50,
                         dragMode: 'move',
                         preview: [document.querySelector('.previewBox'),
                             document.querySelector('.previewBoxRound')]
