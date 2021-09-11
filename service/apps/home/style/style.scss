@@ -462,6 +462,9 @@
                   transition: all .3s;
                   width: 100%;
                 }
+                .collect-content-word:hover {
+                  color: $color-high-light;
+                }
               }
             }
           }
