@@ -49,34 +49,69 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     }
 
     $scope.uploadImg = function () {
-        document.querySelector('#imgReader').click()
+        document.querySelector('#imgReader').click();
         document.querySelector('#imgReader').addEventListener('change', function (eve) {
             let image = document.getElementById('user-image-dialog');
             image.style.display = "flex";
             let reader = new FileReader();
             if (eve.target.files[0]) {
-
-                //readAsDataURL方法可以将File对象转化为data:URL格式的字符串（base64编码）
                 reader.readAsDataURL(eve.target.files[0]);
                 reader.onload = (e) => {
                     let dataURL = reader.result;
-                    //将img的src改为刚上传的文件的转换格式
                     document.querySelector('#cropImg').src = dataURL;
 
                     const image = document.getElementById('cropImg');
 
-                    $scope.CROPPER = new Cropper(image, {
+                    new Cropper(image, {
                         aspectRatio: 16 / 16,
                         viewMode: 0,
                         minContainerWidth: 50,
                         minContainerHeight: 50,
                         dragMode: 'move',
                         preview: [document.querySelector('.previewBox'),
-                            document.querySelector('.previewBoxRound')]
+                            document.querySelector('.previewBoxRound')],
+                        ready() {
+                            $scope.cropper = this.cropper;
+                            $scope.clockwise = function () {
+                                $scope.cropper.rotate(90)
+                            };
+
+                            $scope.counterclockwise = function () {
+                                $scope.cropper.rotate(-90)
+                            };
+
+                            $scope.narrow = function () {
+                                $scope.cropper.zoom(-0.1)
+                            };
+
+                            $scope.enlarge = function () {
+                                $scope.cropper.zoom(0.1)
+                            };
+
+                            $scope.reset = function () {
+                                $scope.cropper.reset()
+                            };
+                        },
                     })
                 }
             }
         })
+    };
+
+    $scope.imageDialogClose = function () {
+        $scope.cropper.destroy();
+        let file = document.getElementById("imgReader");
+        file.value = "";
+        let image = document.getElementById('user-image-dialog');
+        image.style.display = "none";
+    };
+
+    $scope.cutBtnCancel = function () {
+        $scope.imageDialogClose()
+    };
+
+    $scope.cutBtnConfirml = function () {
+
     };
 
     $scope.profileBlogGet = function (page = 1) {
@@ -108,12 +143,14 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         })
     };
 
+
     $scope.optionsSelect = function (each) {
         $scope.options.forEach(function (item) {
             item.select = item.key === each.key
         })
         $scope.currentOption = each;
     };
+
 
     $scope.blog = function (id) {
         window.open("http://127.0.0.1:3000/#!/main/community/blog?id=" + id)

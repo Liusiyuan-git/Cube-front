@@ -94,11 +94,14 @@
                   position: relative;
                   width: 600px;
                   height: 600px;
-                  background: $color-white;
+                  display: flex;
+                  justify-content: space-between;
+                  flex-direction: column;
+                  background: #fff;
                   border-radius: 6px;
                   box-shadow: 0 0 1px 0 rgb(0 0 0 / 8%), 0 0 5px 0 rgb(0 0 0 / 8%);
 
-                  .close {
+                  .image-dialog-close {
                     position: absolute;
                     width: 25px;
                     height: 25px;
@@ -108,7 +111,7 @@
                     cursor: pointer;
                   }
 
-                  .close:before {
+                  .image-dialog-close:before {
                     content: '';
                     position: absolute;
                     left: 50%;
@@ -123,19 +126,27 @@
                     border-radius: 2px;
                   }
 
-                  .close:after {
+                  .image-dialog-close:after {
                     content: '';
                     position: absolute;
                     left: 50%;
                     top: 50%;
                     transform: translate(-50%, -50%) rotate(
-                                    -45deg);
+                                    45deg);
                     width: 2px;
                     height: 13px;
                     background-color: #a5a5a5;
                     transition: all .15s ease-out;
                     display: block;
                     border-radius: 2px;
+                  }
+
+                  .image-dialog-close:hover:before {
+                    background-color: #646464;
+                  }
+
+                  .image-dialog-close:hover:after {
+                    background-color: #646464;
                   }
 
                   .header {
@@ -152,9 +163,107 @@
                       white-space: nowrap;
                     }
                   }
-                  .cut-block{
-                    width: 350px;
-                    height: 350px;padding: 0 20px;
+
+                  .cut-block {
+                    display: flex;
+                    justify-content: space-between;
+                    padding: 0 20px;
+
+                    .left-area-block {
+                      .canvas {
+                        width: 380px;
+                        height: 380px;
+                      }
+
+                      .cropImg {
+                        height: 450px;
+                        width: 450px;
+                        box-shadow: 0 0 5px #adadad;
+                      }
+
+                      .operate-block {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin: 20px;
+
+                        .operate {
+                          display: flex;
+                          border-radius: 20px;
+                          border: 1px solid #ccc;
+
+                          .icon-operate-style {
+                            height: 25px;
+                            width: 50px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            border-right: 1px solid $color-gray-500;
+                            font-size: 15px;
+                            cursor: pointer;
+                          }
+
+                          .icon-operate-style:hover {
+                            color: $color-gray-500;
+                          }
+                        }
+                      }
+                    }
+
+                    .right-area-block {
+                      display: flex;
+                      align-items: center;
+                      flex-direction: column;
+                      width: 100%;
+
+                      .previewBox, .previewBoxRound {
+                        box-shadow: 0 0 5px #adadad;
+                        width: 100px;
+                        height: 100px;
+                        margin-top: 30px;
+                        overflow: hidden;
+                      }
+
+                      .previewBoxRound {
+                        border-radius: 50%;
+                      }
+                    }
+                  }
+
+                  .cut-block-footer {
+                    position: relative;
+                    text-align: right;
+                    padding: 18px;
+
+                    .cut-btn {
+                      font-size: 14px;
+                      text-decoration: none;
+                      padding: 2px 22px;
+                      white-space: nowrap;
+                      border-radius: 6px;
+                      font-weight: 600;
+                      display: inline-block;
+                      cursor: pointer;
+                      border: 0;
+                      appearance: none;
+                      outline: 0;
+                    }
+
+                    .cut-btn:active {
+                      transform: scale(.9);
+                    }
+
+                    .ok {
+                      background-color: $color-high-light;
+                      color: #fff;
+                    }
+
+                    .cancel {
+                      margin-left: 10px;
+                      color: #504949;
+                      background-color: transparent;
+                      font-weight: 500;
+                    }
                   }
                 }
               }

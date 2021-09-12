@@ -122,6 +122,18 @@
                   padding-bottom: 12px;
                 }
 
+                .images {
+                  display: flex;
+                  width: 100%;
+                  .images-block{
+                    display: flex;
+                    align-items: center;
+                    overflow: hidden;
+                    margin-right: 20px;
+                    border-radius: 5px;
+                  }
+                }
+
                 .talk-bottom {
                   display: flex;
                   align-items: center;
