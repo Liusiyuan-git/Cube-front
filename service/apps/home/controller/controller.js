@@ -9,6 +9,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         }, 300);
         $scope.initParams();
         $scope.contentDataGet();
+        $scope.userProfileGet()
         $scope.scroll();
         $timeout(function () {
             $scope.collectionGet()
@@ -18,20 +19,22 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     $scope.initParams = function () {
         $scope.currentMenu = $scope.homeMenu[0].key;
         $scope.currentFilter = $scope.forumBlock[0];
-        $scope.currentFilterChild = $scope.forumBlock[0].child[0]
+        $scope.currentFilterChild = $scope.forumBlock[0].child[0];
+        $scope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + $rootScope.userImage;
+
     };
 
     $scope.filterSelect = function (i) {
         $scope.forumBlock.forEach(function (item) {
-            item.select = i.key === item.key
+            item.select = i.key === item.key;
         })
         $scope.currentFilter = i;
-        $scope.filterChildSelect($scope.currentFilter.child[0])
+        $scope.filterChildSelect($scope.currentFilter.child[0]);
     };
 
     $scope.filterChildSelect = function (i) {
         $scope.currentFilter.child.forEach(function (item) {
-            item.select = item.key === i.key
+            item.select = item.key === i.key;
         })
         $scope.currentFilterChild = i;
         $scope.contentDataGet($scope.currentMenu)
@@ -67,6 +70,18 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
             return null
         }
         dataService.callOpenApi("cube.collection.get", {"cubeid": $rootScope.userId}, "private").then(function (data) {
+            if (data.success) {
+                $scope.cubeCollection = data.content;
+                if (data.content.length > 5) {
+                    $scope.collect_up = false;
+                    $scope.intervalId = setInterval($scope.collectBlockTransform, 3000)
+                }
+            }
+        })
+    };
+
+    $scope.userProfileGet = function (){
+        dataService.callOpenApi("user.profile.get", {"cubeid": $rootScope.userId}, "private").then(function (data) {
             if (data.success) {
                 $scope.cubeCollection = data.content;
                 if (data.content.length > 5) {

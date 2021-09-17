@@ -22,22 +22,19 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
     };
 
     $scope.loginStatusCheck = function () {
-        let starttime = parseInt(localStorage.getItem("setLoginStartTime"))
-        let currenttime = (Date.parse(new Date())) / 1000
+        let starttime = parseInt(localStorage.getItem("setLoginStartTime"));
+        let currenttime = (Date.parse(new Date())) / 1000;
         let second = Math.floor(currenttime - starttime);
         if (second <= 86400) {
-            $rootScope.userId = localStorage.getItem("CubeId")
-            $rootScope.userName = localStorage.getItem("userName")
+            $rootScope.userId = localStorage.getItem("CubeId");
             $rootScope.login = true;
             $rootScope.cubeWarning('success', '登录成功', 3000).then(function () {
                 $state.go("home", {state: 'home'});
             })
         } else {
-            localStorage.removeItem('setLoginStartTime')
-            localStorage.removeItem('CubeId')
-            localStorage.removeItem("userName")
-            $rootScope.userId = ""
-            $rootScope.userName = ""
+            localStorage.removeItem('setLoginStartTime');
+            localStorage.removeItem('CubeId');
+            $rootScope.userId = "";
             $rootScope.login = false;
         }
     };
@@ -137,7 +134,6 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
                         $rootScope.cubeWarning('error', data.msg || "未知错误")
                     } else {
                         $rootScope.userId = data['cubeId']
-                        $rootScope.userName = data['userName']
                         $rootScope.login = true;
                         $scope.setLoginStartTime(data)
                         $rootScope.cubeWarning('success', "登录成功", 3000).then(function () {
@@ -152,15 +148,16 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
     $scope.setLoginStartTime = function (data) {
         let date = (Date.parse(new Date())) / 1000
         localStorage.setItem("setLoginStartTime", date);
-        localStorage.setItem("CubeId", data['cubeId'])
-        localStorage.setItem("userName", data['userName'])
+        localStorage.setItem("CubeId", data['cubeId']);
+        localStorage.setItem("userName", data['userName']);
+        localStorage.setItem("userImage", data['image']);
     };
 
     $scope.passwordForget = function () {
-        let phone
-        let passWord
-        let passRepeat
-        let code
+        let phone;
+        let passWord;
+        let passRepeat;
+        let code;
         $rootScope.swal.fire({
             title: '密码修改',
             confirmButtonText: '修改',
@@ -249,7 +246,7 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
                     return false
                 }
                 $scope.time = 120;
-                const content = $rootScope.swal.getFooter()
+                const content = $rootScope.swal.getFooter();
                 if (content) {
                     const b = content.querySelector('b')
                     b.textContent = '验证码已发送，剩余时间：120 秒'

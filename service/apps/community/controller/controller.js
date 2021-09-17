@@ -14,15 +14,12 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
             let second = Math.floor(currenttime - starttime);
             if (second <= 86400) {
                 $rootScope.userId = localStorage.getItem("CubeId");
-                $rootScope.userName = localStorage.getItem("userName");
                 $rootScope.login = true;
                 return true
             } else {
                 localStorage.removeItem('setLoginStartTime');
                 localStorage.removeItem('CubeId');
-                localStorage.removeItem("userName");
-                $rootScope.userId = ""
-                $rootScope.userName = ""
+                $rootScope.userId = "";
                 $rootScope.login = false;
                 return false
             }

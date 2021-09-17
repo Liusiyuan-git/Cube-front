@@ -15,14 +15,12 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
 
     $scope.initParams = function () {
         $scope.inputimage = "";
+        $scope.userImage = "";
         $scope.currentOption = $scope.options[0];
         $scope.profileId = localStorage.getItem("profileId");
     };
 
     $scope.loadingImg = function (eve) {
-
-        //读取上传文件
-        console.log("nnnnnn")
         let reader = new FileReader();
         if (eve.target.files[0]) {
 
@@ -110,8 +108,41 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         $scope.imageDialogClose()
     };
 
-    $scope.cutBtnConfirml = function () {
+    $scope.cutBtnConfirm = function () {
+        $scope.cropper.getCroppedCanvas({
+            maxWidth: 4096,
+            maxHeight: 4096,
+            fillColor: '#fff',
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'medium',
+        }).toBlob((blob) => {
+            $scope.getUserImgBase64(blob);
+            $scope.imageDialogClose();
+        })
+    };
 
+    $scope.sendUserImage = function (image) {
+        if (!$rootScope.userId) {
+            $rootScope.cubeWarning('error', '请先登录')
+            return null
+        }
+        dataService.callOpenApi('send.user.image', {
+            image: image,
+            cubeid: $rootScope.userId,
+            mode: "private"
+        }, 'private').then(function (data) {
+
+        })
+    };
+
+    $scope.getUserImgBase64 = function (file) {
+        let reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function (e) {
+            $scope.userImage = e.target.result;
+            $scope.$apply();
+            $scope.sendUserImage(e.target.result)
+        }
     };
 
     $scope.profileBlogGet = function (page = 1) {
