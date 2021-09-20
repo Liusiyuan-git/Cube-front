@@ -1,0 +1,85 @@
+<div class="blog" ng-init="init()">
+    <div id="container" class="container">
+        <div class="no-content" ng-if="!detailGetSuccess">
+            <div class="iconfont icon-smile icon-style"></div>
+            <div class="word-style">帖子不存在或已被删除</div>
+        </div>
+        <div class="area" ng-show="detailGetSuccess">
+            <div class="left-area">
+                <div class="blog-title">{{content.title}}</div>
+                <div class="blog-information">
+                    <div class="author-block">
+                        <div class="image">
+                            <img class="img" src="http://127.0.0.1:8080/api/user/get.photo?userid=12&kind=user&type=jpg">
+                        </div>
+                        <span class="author">{{content.name}}</span>
+                        <div class="button">{{"+关注"}}</div>
+                    </div>
+                    <span>{{content.date}}</span>
+                </div>
+                <div class="cover" ng-if="content.cover">
+                    <img class="image" ngf-src="content.cover">
+                </div>
+                <div id="blog-toolbar" class="blog-toolbar" style="display: none"></div>
+                <div id="blog-text" class="blog-text"></div>
+            </div>
+            <div id="like" class="options like iconfont icon-like-fill" ng-click="like()">
+                <div class="mark">{{content.love > 99 ? "99+" : content.love}}</div>
+            </div>
+            <div id="star" class="options star iconfont icon-star-fill" ng-class="{'star-hight-light':collectConfirm}"
+                 ng-click="collect()">
+                <div class="mark">{{content.collect > 99 ? "99+" : content.collect}}</div>
+            </div>
+            <div id="rocket" class="options rocket iconfont icon-caret-up" ng-click="rocket()"></div>
+        </div>
+    </div>
+    <div class="comment" ng-show="detailGetSuccess">
+        <div class="editor">
+            <div class="user-block">
+                <div class="image-block">
+                    <img class="image" src="http://127.0.0.1:8080/api/user/get.photo?userid=12&kind=user&type=jpg">
+                </div>
+                <div class="user-name">{{userName}}</div>
+            </div>
+            <div id="comment-text" class="comment-text text-style"></div>
+            <div class="menu">
+                <div id="comment-toolbar" class="comment-toolbar"></div>
+                <div class="button" ng-click="commentSend()">{{"发布"}}</div>
+            </div>
+        </div>
+        <div class="comments">
+            <div class="comment-title">{{"精选留言" + "( " + content.comment + " )"}}</div>
+            <div class="no-content" ng-if="!comment">
+                <div class="iconfont icon-smile icon-style"></div>
+                <div class="word-style">还没有评论哦，来当第一个吧~</div>
+            </div>
+            <div class="comment-content" ng-if="comment">
+                <div class="comment-block" ng-repeat="i in comment track by $index">
+                    <div class="comment-part1">
+                        <img class="image" src="http://127.0.0.1:8080/api/user/get.photo?userid=12&kind=user&type=jpg">
+                    </div>
+                    <div class="comment-part2">
+                        <div class="name">{{i.name}}</div>
+                        <div class="content">{{i.comment}}</div>
+                        <div class="comment-bottom-line">
+                            <div class="comment-bottom-date">{{i.date}}</div>
+                            <div class="comment-options" ng-click="commentLike(i, $index)">
+                                <div class="iconfont icon-like icon-style">{{i.love}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="page">
+            <ul class="pagination" id="pagination">
+            </ul>
+            <input type="hidden" id="PageCount" runat="server" />
+            <input type="hidden" id="PageSize" runat="server" value="8" />
+            <input type="hidden" id="countindex" runat="server" value="10"/>
+            <input type="hidden" id="visiblePages" runat="server" value="7" />
+        </div>
+    </div>
+    <div style="height: 300px;width: 100%"></div>
+</div>
+

@@ -215,7 +215,6 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.talkCommentPageCreate = function (data, id, item, index) {
-        console.log(11111)
         $("#PageCount" + index).val(data.length);
         $("#PageSize" + index).val(10);
         if (!$scope.talk_comment_page_created || $scope.talkCommentBlockShow) {
