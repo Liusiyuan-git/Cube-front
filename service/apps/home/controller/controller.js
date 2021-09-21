@@ -20,7 +20,6 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         $scope.currentMenu = $scope.homeMenu[0].key;
         $scope.currentFilter = $scope.forumBlock[0];
         $scope.currentFilterChild = $scope.forumBlock[0].child[0];
-        $scope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + $rootScope.userImage;
 
     };
 
@@ -83,11 +82,8 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     $scope.userProfileGet = function (){
         dataService.callOpenApi("user.profile.get", {"cubeid": $rootScope.userId}, "private").then(function (data) {
             if (data.success) {
-                $scope.cubeCollection = data.content;
-                if (data.content.length > 5) {
-                    $scope.collect_up = false;
-                    $scope.intervalId = setInterval($scope.collectBlockTransform, 3000)
-                }
+                $scope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data.profile.image;
+                $scope.userName = data.profile.name;
             }
         })
     };

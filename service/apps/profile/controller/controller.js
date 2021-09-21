@@ -10,7 +10,41 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             frame.className = "container in";
         }, 300);
         $scope.initParams();
+        $scope.userProfileGet();
         $scope.profileBlogGet();
+        $scope.rocketPosition();
+        $scope.introduceDialog()
+    };
+
+    $scope.introduceDialog = function () {
+        var btn = document.body.querySelector("#button");
+        btn.addEventListener("click", function () {
+            $rootScope.coco({
+                title: "登录",
+                el: "#login",
+                okText: "提交",
+            }).onClose(function (ok, cc, done) {
+                if (ok) {
+                    if (username.value.trim() !== "" && username.value.trim() !== "") {
+                        done();
+                    } else {
+                        cc.setErrorText("输入不能为空！");
+                    }
+                } else {
+                    done();
+                }
+            });
+        });
+    };
+
+    $scope.rocketPosition = function () {
+        let container = document.getElementById("area");
+        let rocket = document.getElementById("rocket");
+        rocket.style.right = container.offsetLeft + 50 + "px";
+    };
+
+    $scope.rocket = function () {
+        document.documentElement.scrollIntoView({block: 'start', behavior: 'smooth'})
     };
 
     $scope.initParams = function () {
@@ -44,7 +78,17 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                 })
             }
         }
-    }
+    };
+
+    $scope.userProfileGet = function () {
+        dataService.callOpenApi("user.profile.get", {"cubeid": $rootScope.userId}, "private").then(function (data) {
+            if (data.success) {
+                $scope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data.profile.image;
+                $scope.userName = data.profile.name;
+                $scope.userProfile = data.profile
+            }
+        })
+    };
 
     $scope.uploadImg = function () {
         document.querySelector('#imgReader').click();
@@ -165,13 +209,25 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                 }
                 // $scope.rocket();
                 $scope.profileData = data.content;
-                // $scope.current_page = page;
-                // $scope.pageCreate(data);
-                // $scope.page_created = true;
+                $scope.current_page = page;
+                $scope.pageCreate(data);
+                $scope.page_created = true;
             } else {
                 $scope.content = null
             }
         })
+    };
+
+    $scope.pageCreate = function (data) {
+        $("#PageCount").val(data.length);
+        $("#PageSize").val(10);
+        if (!$scope.page_created) {
+            $rootScope.loadpage(function (num, type) {
+                if (num !== $scope.current_page) {
+                    $scope.profileBlogGet(num)
+                }
+            })
+        }
     };
 
 
