@@ -13,28 +13,50 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         $scope.userProfileGet();
         $scope.profileBlogGet();
         $scope.rocketPosition();
-        $scope.introduceDialog()
+        $scope.introduceEdit()
     };
 
-    $scope.introduceDialog = function () {
-        var btn = document.body.querySelector("#button");
+
+    $scope.introduceEdit = function () {
+        let btn = document.body.querySelector("#introduce-edit");
+        let introduce = document.body.querySelector("#introduce");
         btn.addEventListener("click", function () {
             $rootScope.coco({
-                title: "登录",
-                el: "#login",
+                title: "设置",
+                el: "#introduce-edit-dialog",
                 okText: "提交",
+                buttonColor: '#03a9f4',
             }).onClose(function (ok, cc, done) {
                 if (ok) {
-                    if (username.value.trim() !== "" && username.value.trim() !== "") {
-                        done();
+                    if (introduce.value.trim() !== "") {
+                        $scope.introduceSend(introduce.value.trim());
+                        done()
                     } else {
-                        cc.setErrorText("输入不能为空！");
+                        $rootScope.cubeWarning("error", "输入不能为空！");
                     }
                 } else {
-                    done();
+                    done()
                 }
             });
         });
+    };
+
+    $scope.introduceSend = function (s) {
+        if (!$scope.loginStatusCheck()) {
+            $rootScope.cubeWarning('error', '请先登录')
+            return null
+        }
+        dataService.callOpenApi("user.introduce.send", {
+            "cubeid": $rootScope.userId,
+            "introduce": s
+        }, "private").then(function (data) {
+            if (data.success) {
+                $scope.userProfile.introduce = s
+                $rootScope.cubeWarning("success", "修改成功")
+            } else {
+                $rootScope.cubeWarning("success", "未知错误")
+            }
+        })
     };
 
     $scope.rocketPosition = function () {
@@ -207,11 +229,40 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                         }
                     })
                 }
-                // $scope.rocket();
-                $scope.profileData = data.content;
+                $scope.rocket();
+                $scope.profileBlogData = data.content;
                 $scope.current_page = page;
                 $scope.pageCreate(data);
                 $scope.page_created = true;
+            } else {
+                $scope.content = null
+            }
+        })
+    };
+
+    $scope.profileTalkGet = function (page = 1) {
+        $rootScope.cubeLoading("加载中...");
+        dataService.callOpenApi("profile.talk.get", {
+            "page": page + "",
+            "cube_id": $scope.profileId
+        }, "common").then(function (data) {
+            $rootScope.swal.close()
+            if (data.success && data.length) {
+                // if (data.content) {
+                //     data.content.forEach(function (item) {
+                //         let time = item.date.split(" ")[0].split("-").join("")
+                //         item.author = item.name
+                //         if (item.cover) {
+                //             let cover = ["http://47.119.151.14:3001/blog", item["cube_id"], time, item.cover].join("/")
+                //             item.cover = cover
+                //         }
+                //     })
+                // }
+                // // $scope.rocket();
+                // $scope.profileData = data.content;
+                // $scope.current_page = page;
+                // $scope.pageCreate(data);
+                // $scope.page_created = true;
             } else {
                 $scope.content = null
             }
@@ -236,6 +287,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             item.select = item.key === each.key
         })
         $scope.currentOption = each;
+        each.func()
     };
 
 
@@ -247,11 +299,12 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         "key": "blog",
         "name": "文章",
         "select": true,
-        "func": $scope.blog
+        "func": $scope.profileBlogGet
     }, {
         "key": "talk",
         "name": "说说",
-        "select": false
+        "select": false,
+        "func": $scope.profileTalkGet
     }, {
         "key": "collect",
         "name": "收藏",
