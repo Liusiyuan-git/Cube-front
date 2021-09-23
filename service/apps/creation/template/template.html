@@ -1,0 +1,107 @@
+<div class="creation" ng-init="init()">
+    <div ng-if="userId" ng-init="editorDataSet()"></div>
+    <div id="container" class="container">
+        <div class="area">
+            <div class="left-area">
+                <div class="menu-block">
+                    <div class="menu">我要发表</div>
+                    <div class="button-block">
+                        <button ng-click="save()" class="button-item" style="color: rgb(38, 191, 191);border-color: rgb(38, 191, 191)">
+                            <div>保存</div>
+                        </button>
+                        <button ng-click="clear()" class="button-item" style="color: rgb(255, 150, 7);border-color: rgb(255, 150, 7)">
+                            <div>清除</div>
+                        </button>
+                        <button ng-click="sendMenu($event)" class="button-item" style="transform: none">
+                            <div>发布</div>
+                            <div class="iconfont icon-down icon-style"></div>
+                            <div class="mark-block" id="send-menu">
+                                <div class="arrow"></div>
+                                <div class="content">
+                                    <div class="mark-title">
+                                        <div>选择标签</div>
+                                    </div>
+                                    <div class="mark-content">
+                                        <div class="mark-preface">绑定合适的话题，能方便分类检索，文章也更容易让读者发现。</div>
+                                        <div class="mark">
+                                            <div class="mark-item" ng-repeat="i in mark" ng-class="{'mark-item-selected':i.select}" ng-click="markSelect(i, $event)">{{i.name}}</div>
+                                        </div>
+                                    </div>
+                                    <div class="mark-title">
+                                        <div>{{currentMark.name}}</div>
+                                    </div>
+                                    <div class="mark-content">
+                                        <div class="mark">
+                                            <div class="mark-item" ng-repeat="i in currentMark.child" ng-class="{'mark-item-selected':i.select}" ng-click="markChildSelect(i, $event)">{{i.name}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="content-bottom-line">
+                                    <div ng-click="send()" class="button-send">
+                                        <div>下一步</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                <div ng-show="!cover" class="cover" ngf-select="upload($file)" ngf-accept="'image/*'"  ngf-pattern="'image/*'" ngf-max-files="1" ngf-max-size="1MB">
+                    <div class="iconfont icon-camera-fill camera"></div>
+                    <div class="word">添加题图</div>
+                </div>
+                <div ng-show="cover" class="photo">
+                    <img ngf-src="cover" width="100%">
+                    <div class="camera">
+                        <div class="block">
+                            <div class="iconfont icon-camera-fill" style="color: white; font-size: 25px" ngf-select="upload($file)" ngf-accept="'image/*'"  ngf-pattern="'image/*'" ngf-max-files="1" ngf-max-size="1MB"></div>
+                        </div>
+                        <div class="block">
+                            <div class="iconfont icon-delete-fill" style="color: white; font-size: 25px" ng-click="delete()"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="title">
+                    <input rows="1" class="input" placeholder="请输入标题（最多 50 个字）" style="height: 45px;" ng-model="title">
+                </div>
+                <div id="editor-toolbar" class="editor-toolbar"></div>
+                <div id="editor-text" class="editor-text"></div>
+            </div>
+<!--            <div class="right-area" id="right-area">-->
+<!--                <div class="right-options">-->
+<!--                    <div class="right-item" ng-click="send()">-->
+<!--                        <div class="block-icon" style="background: #E1EDFF;transform: rotate(-90deg);">-->
+<!--                            <div class="iconfont icon-style icon-send" style="color: rgb(0, 102, 255);"></div>-->
+<!--                        </div>-->
+<!--                        <div class="word" ng-click="send()">发布</div>-->
+<!--                    </div>-->
+<!--                    <div class="right-item" ng-click="save()">-->
+<!--                        <div class="block-icon" style="background: #FFF3E2;">-->
+<!--                            <div class="iconfont icon-style icon-save" style="color: rgb(255, 150, 7);"></div>-->
+<!--                        </div>-->
+<!--                        <div class="word">保存草稿</div>-->
+<!--                    </div>-->
+<!--                    <div class="right-item" ng-click="clear()">-->
+<!--                        <div class="block-icon" style="background: #FEF9E2;">-->
+<!--                            <div class="iconfont icon-style icon-clear" style="color: rgb(244, 200, 7);"></div>-->
+<!--                        </div>-->
+<!--                        <div class="word">清除内容</div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="label-block">-->
+<!--                    <div class="label-title">标签</div>-->
+<!--                    <div class="label-content">-->
+<!--                        <div ng-repeat="i in label">-->
+<!--                            <div class="label-each" ng-click="filterSelect(i)">-->
+<!--                                <div>{{i.name}}</div>-->
+<!--                                <div class="label-icon iconfont icon-check-circle-fill" ng-class="{'label-icon-select':i.select}"></div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+            <div id="rocket" class="rocket iconfont icon-caret-up" ng-click="rocket()"></div>
+        </div>
+    </div>
+    <div style="height: 50px;width: 100%"></div>
+</div>
+

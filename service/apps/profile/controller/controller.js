@@ -1,3 +1,5 @@
+import Viewer from "viewerjs";
+
 let app = require("../../app")
 import "../style/style.scss"
 import 'cropperjs/dist/cropper.css';
@@ -197,8 +199,31 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             cubeid: $rootScope.userId,
             mode: "private"
         }, 'private').then(function (data) {
-
+            if(data.success){
+                $rootScope.cubeWarning("success","上传成功")
+            }else{
+                $rootScope.cubeWarning("error","上传出错")
+            }
         })
+    };
+
+    $scope.talkImagesClick = function (image) {
+        const viewer = new Viewer(document.getElementById(image), {
+            navbar: false,
+            title: false,
+            keyboard: false,
+            zIndex: 20000,
+            toolbar: {
+                zoomIn: 4,
+                zoomOut: 4,
+                reset: 4,
+                rotateLeft: 4,
+                rotateRight: 4,
+                flipHorizontal: 4,
+                flipVertical: 4,
+            },
+        });
+        viewer.show()
     };
 
     $scope.getUserImgBase64 = function (file) {
@@ -232,7 +257,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                 $scope.rocket();
                 $scope.profileBlogData = data.content;
                 $scope.current_page = page;
-                $scope.pageCreate(data);
+                $scope.pageCreateBlog(data);
                 $scope.page_created = true;
             } else {
                 $scope.content = null
@@ -248,36 +273,58 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         }, "common").then(function (data) {
             $rootScope.swal.close()
             if (data.success && data.length) {
-                // if (data.content) {
-                //     data.content.forEach(function (item) {
-                //         let time = item.date.split(" ")[0].split("-").join("")
-                //         item.author = item.name
-                //         if (item.cover) {
-                //             let cover = ["http://47.119.151.14:3001/blog", item["cube_id"], time, item.cover].join("/")
-                //             item.cover = cover
-                //         }
-                //     })
-                // }
-                // // $scope.rocket();
-                // $scope.profileData = data.content;
-                // $scope.current_page = page;
-                // $scope.pageCreate(data);
-                // $scope.page_created = true;
+                if(data.content){
+                    $scope.profileTalkData = data.content
+                    $scope.talkImagesSet(data.content);
+                }
+                $scope.rocket();
+                $scope.current_page = page;
+                $scope.pageCreateTalk(data);
+                $scope.page_created = true;
             } else {
                 $scope.content = null
             }
         })
     };
 
-    $scope.pageCreate = function (data) {
-        $("#PageCount").val(data.length);
-        $("#PageSize").val(10);
+    $scope.talkImagesSet = function (content) {
+        $scope.talkImagesBlock = {};
+        content.forEach(function (item) {
+            let time = item.date.split(" ")[0].split("-").join("")
+            if (item.images) {
+                item.images.split(":").forEach(function (image) {
+                    let link = ["http://47.119.151.14:3001/talk", item["cube_id"], time, image].join("/")
+                    if (!$scope.talkImagesBlock[item["id"]]) {
+                        $scope.talkImagesBlock[item["id"]] = [link]
+                    } else {
+                        $scope.talkImagesBlock[item["id"]].push(link)
+                    }
+                });
+            }
+        });
+    };
+
+    $scope.pageCreateBlog = function (data) {
+        $("#PageCountblog").val(data.length);
+        $("#PageSizeblog").val(10);
         if (!$scope.page_created) {
             $rootScope.loadpage(function (num, type) {
                 if (num !== $scope.current_page) {
                     $scope.profileBlogGet(num)
                 }
-            })
+            },"blog")
+        }
+    };
+
+    $scope.pageCreateTalk = function (data) {
+        $("#PageCounttalk").val(data.length);
+        $("#PageSizetalk").val(10);
+        if (!$scope.page_created) {
+            $rootScope.loadpage(function (num, type) {
+                if (num !== $scope.current_page) {
+                    $scope.profileTalkGet(num)
+                }
+            },"talk")
         }
     };
 
@@ -287,6 +334,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             item.select = item.key === each.key
         })
         $scope.currentOption = each;
+        $scope.page_created = false;
         each.func()
     };
 
