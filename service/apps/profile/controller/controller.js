@@ -105,7 +105,9 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.userProfileGet = function () {
+        $rootScope.cubeLoading("加载中...");
         dataService.callOpenApi("user.profile.get", {"cubeid": $rootScope.userId}, "private").then(function (data) {
+            $rootScope.swal.close()
             if (data.success) {
                 $scope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data.profile.image;
                 $scope.userName = data.profile.name;
@@ -115,50 +117,68 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.uploadImg = function () {
+        $scope.uploadImgStatus = false;
         document.querySelector('#imgReader').click();
         document.querySelector('#imgReader').addEventListener('change', function (eve) {
-            let image = document.getElementById('user-image-dialog');
-            image.style.display = "flex";
-            let reader = new FileReader();
-            if (eve.target.files[0]) {
-                reader.readAsDataURL(eve.target.files[0]);
-                reader.onload = (e) => {
-                    let dataURL = reader.result;
-                    document.querySelector('#cropImg').src = dataURL;
+            if (!$scope.uploadImgStatus) {
+                $scope.uploadImgStatus = true;
+                $rootScope.coco({
+                    title: "设置",
+                    el: "#user-image-dialog",
+                    okText: "提交",
+                    width: "600px",
+                    buttonColor: '#03a9f4',
+                }).onClose(function (ok, cc, done) {
+                    if (ok) {
+                        $scope.cutBtnConfirm(done)
+                    } else {
+                        $scope.cutBtnCancel()
+                        done()
+                    }
+                });
+                let image = document.getElementById('user-image-dialog');
+                image.style.display = "flex";
+                let reader = new FileReader();
+                if (eve.target.files[0]) {
+                    reader.readAsDataURL(eve.target.files[0]);
+                    reader.onload = (e) => {
+                        let dataURL = reader.result;
+                        document.querySelector('#cropImg').src = dataURL;
 
-                    const image = document.getElementById('cropImg');
+                        const image = document.getElementById('cropImg');
 
-                    new Cropper(image, {
-                        aspectRatio: 16 / 16,
-                        viewMode: 0,
-                        minContainerWidth: 50,
-                        minContainerHeight: 50,
-                        dragMode: 'move',
-                        preview: [document.querySelector('.previewBox'),
-                            document.querySelector('.previewBoxRound')],
-                        ready() {
-                            $scope.cropper = this.cropper;
-                            $scope.clockwise = function () {
-                                $scope.cropper.rotate(90)
-                            };
+                        new Cropper(image, {
+                            aspectRatio: 16 / 16,
+                            viewMode: 0,
+                            minContainerWidth: 50,
+                            minContainerHeight: 50,
+                            dragMode: 'move',
+                            preview: [document.querySelector('#previewBox'),
+                                document.querySelector('#previewBoxRound')],
+                            ready() {
+                                $scope.cropper = this.cropper;
+                                $scope.clockwise = function () {
+                                    $scope.cropper.rotate(90)
+                                };
 
-                            $scope.counterclockwise = function () {
-                                $scope.cropper.rotate(-90)
-                            };
+                                $scope.counterclockwise = function () {
+                                    $scope.cropper.rotate(-90)
+                                };
 
-                            $scope.narrow = function () {
-                                $scope.cropper.zoom(-0.1)
-                            };
+                                $scope.narrow = function () {
+                                    $scope.cropper.zoom(-0.1)
+                                };
 
-                            $scope.enlarge = function () {
-                                $scope.cropper.zoom(0.1)
-                            };
+                                $scope.enlarge = function () {
+                                    $scope.cropper.zoom(0.1)
+                                };
 
-                            $scope.reset = function () {
-                                $scope.cropper.reset()
-                            };
-                        },
-                    })
+                                $scope.reset = function () {
+                                    $scope.cropper.reset()
+                                };
+                            },
+                        })
+                    }
                 }
             }
         })
@@ -176,7 +196,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         $scope.imageDialogClose()
     };
 
-    $scope.cutBtnConfirm = function () {
+    $scope.cutBtnConfirm = function (done) {
         $scope.cropper.getCroppedCanvas({
             maxWidth: 4096,
             maxHeight: 4096,
@@ -184,26 +204,29 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             imageSmoothingEnabled: true,
             imageSmoothingQuality: 'medium',
         }).toBlob((blob) => {
-            $scope.getUserImgBase64(blob);
-            $scope.imageDialogClose();
+            $scope.getUserImgBase64(blob, done);
         })
     };
 
-    $scope.sendUserImage = function (image) {
+    $scope.sendUserImage = function (image, done) {
         if (!$rootScope.userId) {
             $rootScope.cubeWarning('error', '请先登录')
             return null
         }
+        $rootScope.cubeLoading("上传中...");
         dataService.callOpenApi('send.user.image', {
             image: image,
             cubeid: $rootScope.userId,
             mode: "private"
         }, 'private').then(function (data) {
-            if(data.success){
-                $rootScope.cubeWarning("success","上传成功")
-            }else{
-                $rootScope.cubeWarning("error","上传出错")
+            $rootScope.swal.close()
+            if (data.success) {
+                $rootScope.cubeWarning("success", "上传成功")
+            } else {
+                $rootScope.cubeWarning("error", "上传出错")
             }
+            $scope.imageDialogClose();
+            done()
         })
     };
 
@@ -226,13 +249,13 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         viewer.show()
     };
 
-    $scope.getUserImgBase64 = function (file) {
+    $scope.getUserImgBase64 = function (file, done) {
         let reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = function (e) {
             $scope.userImage = e.target.result;
             $scope.$apply();
-            $scope.sendUserImage(e.target.result)
+            $scope.sendUserImage(e.target.result, done)
         }
     };
 
@@ -273,7 +296,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         }, "common").then(function (data) {
             $rootScope.swal.close()
             if (data.success && data.length) {
-                if(data.content){
+                if (data.content) {
                     $scope.profileTalkData = data.content
                     $scope.talkImagesSet(data.content);
                 }
@@ -312,7 +335,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                 if (num !== $scope.current_page) {
                     $scope.profileBlogGet(num)
                 }
-            },"blog")
+            }, "blog")
         }
     };
 
@@ -324,7 +347,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                 if (num !== $scope.current_page) {
                     $scope.profileTalkGet(num)
                 }
-            },"talk")
+            }, "talk")
         }
     };
 
@@ -347,7 +370,8 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         "key": "blog",
         "name": "文章",
         "select": true,
-        "func": $scope.profileBlogGet
+        "func": $scope.profileBlogGet,
+        "eachFUnc": $scope.blog
     }, {
         "key": "talk",
         "name": "说说",

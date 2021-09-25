@@ -1,0 +1,55 @@
+<div ng-init="init()">
+    <img class="login-image" src="../../../../resources/image/img.png">
+    <div class="login-window">
+        <div id="login-dialog" class="login-dialog">
+            <div ng-show="login == 'count'">
+                <div class="login-title">账号登录</div>
+                <div class="login-input-block">
+                    <input class="login-input" type="text" validator="true" placeholder="帐号名/邮件地址" ng-keyup="Count($event)">
+                </div>
+                <div class="login-input-block">
+                    <input class="login-input" type="text" validator="true" placeholder="密码" ng-keyup="passWord($event)">
+                </div>
+                <div class="login-input-block login-count-operate" style="display: flex; justify-content: space-between">
+                    <div class="phone-login" ng-click="change(1)">手机号登录</div>
+                    <div class="count-remember" ng-click="countSave()">
+                        <div class="iconfont icon-border" style="font-size: 16px;padding-right: 7px"
+                             ng-show="!count_save"></div>
+                        <div class="iconfont icon-check-square-fill check-circle-fill"
+                             style="font-size: 16px;padding-right: 7px" ng-show="count_save"></div>
+                        <div>记住登录名</div>
+                    </div>
+                </div>
+            </div>
+            <div ng-show="login == 'phone'">
+                <div class="login-title">手机号登录</div>
+                <div class="login-input-block">
+                    <input class="login-input" type="text" validator="true" placeholder="请输入手机号" ng-keyup="telephone($event)">
+                </div>
+                <div class="login-input-block">
+                    <input class="login-input" type="text" validator="true" placeholder="请输入验证码" ng-keyup="Code($event)">
+                    <div ng-if="code_show" class="verification-code" ng-click="getCode()">获取验证码</div>
+                    <div ng-if="!code_show" class="verification-code">{{'剩余: ' + codeTime + ' s'}}</div>
+                </div>
+                <div class="login-input-block login-count-operate" style="display: flex; justify-content: space-between">
+                    <div class="phone-login" ng-click="change(0)">手机号登录</div>
+                    <div class="count-remember" ng-click="countSave()">
+                        <div class="iconfont icon-border" style="font-size: 16px;padding-right: 7px"
+                             ng-show="!phone_save"></div>
+                        <div class="iconfont icon-check-square-fill check-circle-fill"
+                             style="font-size: 16px;padding-right: 7px" ng-show="phone_save"></div>
+                        <div>记住手机号</div>
+                    </div>
+                </div>
+            </div>
+            <div class="login-button-area">
+                <div class="login-button" ng-click="Login()">登录</div>
+                <div class="login-others">
+                    <div class="visitor" ng-style="{'width':login !== 'phone'?'30%':'50%'}" ng-click="visitorMod()">游客访问</div>
+                    <div ng-show="login !== 'phone'" class="password-forget" ng-click="passwordForget()">忘记密码</div>
+                    <div class="register" ng-style="{'width':login !== 'phone'?'30%':'50%'}" ng-click="Register()">用户注册</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

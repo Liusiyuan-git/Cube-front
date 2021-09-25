@@ -1,0 +1,89 @@
+<div class="forum" ng-init="init()">
+    <div id="container" class="container">
+        <div class="area">
+            <div class="left-area">
+                <div class="filter">
+                    <div class="filter-block">
+                        <div class="filter-each">
+                            <div class="filter-title">方向:</div>
+                            <div class="filter-content">
+                                <div ng-repeat="i in forumBlock">
+                                    <div class="forum-name" ng-class="{'forum-name-selected':i.select}" ng-click="filterSelect(i)">{{i.name}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-block">
+                        <div class="filter-each">
+                            <div class="filter-title">分类</div>
+                            <div class="filter-content">
+                                <div ng-repeat="i in currentFilter.child">
+                                    <div class="forum-name" ng-class="{'forum-name-selected':i.select}" ng-click="filterChildSelect(i)">{{i.name}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="article">
+                    <div class="no-content" ng-if="!content">
+                        <div class="iconfont icon-smile icon-style"></div>
+                        <div class="word-style">暂无数据</div>
+                    </div>
+                    <div ng-repeat="j in content" ng-if="content">
+                        <div class="block" ng-click="blog(j.id)">
+                            <div class="title">{{j.title}}</div>
+                            <div class="content">
+                                <div class="img" ng-if="j.cover">
+                                    <img ngf-src="j.cover" width="170px" height="100px"
+                                         style="object-fit: cover;">
+                                </div>
+                                <div class="word">{{j.text}}</div>
+                            </div>
+                            <div class="footer">
+                                <div class="comment">
+                                    <div class="iconfont icon-like-fill icon-item"></div>
+                                    <div class="footer-item">{{j.love}}</div>
+                                    <div class="iconfont icon-comment icon-item"></div>
+                                    <div class="footer-item">{{j.comment}}</div>
+                                    <div class="iconfont icon-star-fill icon-item"></div>
+                                    <div class="footer-item">{{j.collect}}</div>
+                                    <div class="iconfont icon-eye-fill icon-item"></div>
+                                    <div class="footer-item">{{j.view}}</div>
+                                </div>
+                                <div class="auth">
+                                    <div class="iconfont icon-user icon-item"></div>
+                                    <div class="footer-item">{{j.author}}</div>
+                                    <div class="iconfont icon-time-circle icon-item"></div>
+                                    <div class="footer-item">{{j.date}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="page">
+                        <ul class="pagination" id="pagination">
+                        </ul>
+                        <input type="hidden" id="PageCount" runat="server" />
+                        <input type="hidden" id="PageSize" runat="server" value="8" />
+                        <input type="hidden" id="countindex" runat="server" value="10"/>
+                        <input type="hidden" id="visiblePages" runat="server" value="7" />
+                    </div>
+                </div>
+            </div>
+<!--            <div class="right-area">-->
+<!--                <div class="filter-block">-->
+<!--                    <div class="filter-title">文章</div>-->
+<!--                    <div class="filter-content">-->
+<!--                        <div ng-repeat="i in forumBlock">-->
+<!--                            <div class="filter-each" ng-click="filterSelect(i)">-->
+<!--                                <div>{{i.name}}</div>-->
+<!--                                <div class="filter-icon iconfont icon-check-circle-fill" ng-class="{'filter-icon-select':i.select}"></div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div id="rocket" class="rocket iconfont icon-caret-up" ng-click="rocket()"></div>-->
+<!--            </div>-->
+        </div>
+    </div>
+    <div style="height: 50px;width: 100%"></div>
+</div>

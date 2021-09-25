@@ -1,0 +1,143 @@
+<div class="home" ng-init="init()">
+    <div id="container" class="container">
+        <div class="area">
+            <div class="left-area">
+                <div class="filter">
+                    <div class="filter-block">
+                        <div class="filter-each">
+                            <div class="filter-title">方向:</div>
+                            <div class="filter-content">
+                                <div ng-repeat="i in forumBlock">
+                                    <div class="forum-name" ng-class="{'forum-name-selected':i.select}" ng-click="filterSelect(i)">{{i.name}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-block">
+                        <div class="filter-each">
+                            <div class="filter-title">分类</div>
+                            <div class="filter-content">
+                                <div ng-repeat="i in currentFilter.child">
+                                    <div class="forum-name" ng-class="{'forum-name-selected':i.select}" ng-click="filterChildSelect(i)">{{i.name}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="menu">
+                    <div ng-repeat="i in homeMenu">
+                        <div class="menu-item" ng-class="{'menu-select':i.select}" ng-click="menuSelect(i.key)">{{i.name}}</div>
+                    </div>
+                </div>
+                <div class="article">
+                    <div class="no-content" ng-if="!content">
+                        <div class="icon-style-block">
+                            <div class="icon-style iconfont icon-smile"></div>
+                            <div class="word-style">暂无数据，请稍后刷新再试~</div>
+                        </div>
+<!--                        <div class="word-style">暂无数据</div>-->
+                    </div>
+                    <div ng-repeat="j in content" ng-if="content">
+                        <div class="block" ng-click="blog(j.id)">
+                            <div class="title">
+                                <div class="title-and-date">
+                                    <div class="title-name">{{j.title}}</div>
+                                    <div class="title-date">{{j.date}}</div>
+                                </div>
+                                <div class="title-author">
+                                    <div class="iconfont icon-user"></div>
+                                    <div>{{"&nbsp&nbsp" + j.author + " "}}</div>
+                                </div>
+                            </div>
+                            <div class="content">
+                                <div class="img" ng-if="j.cover">
+                                    <img ngf-src="j.cover" width="170px" height="100px"
+                                    style="object-fit: cover;">
+                                </div>
+                                <div class="word">{{j.text}}</div>
+                            </div>
+                            <div class="footer">
+                                <div class="comment">
+                                    <div class="iconfont icon-like-fill icon-item"></div>
+                                    <div class="footer-item">{{j.love}}</div>
+                                    <div class="iconfont icon-comment icon-item"></div>
+                                    <div class="footer-item">{{j.comment}}</div>
+                                    <div class="iconfont icon-star-fill icon-item"></div>
+                                    <div class="footer-item">{{j.collect}}</div>
+                                    <div class="iconfont icon-eye-fill icon-item"></div>
+                                    <div class="footer-item">{{j.view}}</div>
+                                </div>
+                                <button class="footer-button">立即查看</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="page">
+                    <ul class="pagination" id="pagination">
+                    </ul>
+                    <input type="hidden" id="PageCount" runat="server" />
+                    <input type="hidden" id="PageSize" runat="server" value="8" />
+                    <input type="hidden" id="countindex" runat="server" value="10"/>
+                    <input type="hidden" id="visiblePages" runat="server" value="7" />
+                </div>
+            </div>
+            <div class="right-area">
+                <div class="user">
+                    <div class="user-card-block">
+                        <div class="image">
+                            <div ng-if="!login" class="iconfont icon-user icon-style"></div>
+                            <img ng-if="login && !userImage" class="img" src="http://127.0.0.1:8080/api/user/get.photo?userid=12&kind=user&type=jpg">
+                            <img ng-if="login && userImage" ngf-src="userImage" class="img">
+                        </div>
+                        <div class="name-block">
+                            <div ng-if="login" class="name">{{userName}}</div>
+                            <div ng-if="!login" class="name">{{"请先登录"}}</div>
+                            <div ng-if="login" class="introduction">{{userIntroduce || "暂无简介"}}</div>
+                            <div ng-if="!login" class="introduction">{{"加入cube，点燃你的激情"}}</div>
+                        </div>
+                    </div>
+                    <div ng-if="login" class="user-bottom">
+                        <div class="follow-block">
+                            <div class="follower">
+                                <div class="follow-num">0</div>
+                                <div>{{"关注者"}}</div>
+                            </div>
+                            <div class="followed">
+                                <div class="followed-num">0</div>
+                                <div>{{"正在关注"}}</div>
+                            </div>
+                        </div>
+                        <div class="center-block">
+                            <div>{{"个人中心"}}</div>
+                            <div style="font-size: 12px" class="iconfont icon-right"></div>
+                        </div>
+                    </div>
+                    <div></div>
+                </div>
+                <div class="collect">
+                    <div class="collect-title">
+                        <div class="blog_collect">文章收藏</div>
+                        <div ng-show="cubeCollection" class="collect_more">查看更多</div>
+                        <div ng-show="cubeCollection" class="collect_more iconfont icon-right"></div>
+                    </div>
+                    <div class="collect-content">
+                        <div ng-show="!cubeCollection" class="collect-content-no-data-block">
+                            <div class="iconfont icon-smile"></div>
+                            <div class="collect-content-no-data-word">暂无收藏~</div>
+                        </div>
+                        <div ng-show="cubeCollection" class="collect-content-block" id="collect-content-block">
+                            <div ng-repeat="i in cubeCollection">
+                                <div class="collect-content-each" ng-click="blog(i.id)">
+                                    <div class="collect-content-icon iconfont icon-slack-circle-fill"></div>
+                                    <div class="collect-content-word">{{i.title}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="rocket" class="rocket iconfont icon-caret-up" ng-click="rocket()"></div>
+            </div>
+        </div>
+    </div>
+    <div style="height: 50px;width: 100%"></div>
+</div>
