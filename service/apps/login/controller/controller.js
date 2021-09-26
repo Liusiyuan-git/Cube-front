@@ -27,6 +27,7 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
         let second = Math.floor(currenttime - starttime);
         if (second <= 86400) {
             $rootScope.userId = localStorage.getItem("CubeId");
+            $rootScope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + localStorage.getItem("userImage");
             $rootScope.login = true;
             $rootScope.cubeWarning('success', '登录成功', 3000).then(function () {
                 $state.go("home", {state: 'home'});
@@ -34,7 +35,9 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
         } else {
             localStorage.removeItem('setLoginStartTime');
             localStorage.removeItem('CubeId');
+            localStorage.removeItem('userImage');
             $rootScope.userId = "";
+            $rootScope.userImage = "";
             $rootScope.login = false;
         }
     };
@@ -133,7 +136,8 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
                     if (!data.success) {
                         $rootScope.cubeWarning('error', data.msg || "未知错误")
                     } else {
-                        $rootScope.userId = data['cubeId']
+                        $rootScope.userId = data['cubeId'];
+                        $rootScope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data["image"];
                         $rootScope.login = true;
                         $scope.setLoginStartTime(data)
                         $rootScope.cubeWarning('success', "登录成功", 3000).then(function () {

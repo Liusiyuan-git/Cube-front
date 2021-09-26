@@ -95,6 +95,7 @@ app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', 'dat
     };
 
     $rootScope.loadpage = function (f, index = "") {
+        console.log("xxxxxxx")
         let myPageCount = parseInt($("#PageCount" + index).val());
         let myPageSize = parseInt($("#PageSize" + index).val());
         let countindex = myPageCount % myPageSize > 0 ? (myPageCount / myPageSize) + 1 : (myPageCount / myPageSize);
