@@ -100,7 +100,8 @@ app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', 'dat
         let myPageSize = parseInt($("#PageSize" + index).val());
         let countindex = myPageCount % myPageSize > 0 ? (myPageCount / myPageSize) + 1 : (myPageCount / myPageSize);
         $("#countindex" + index).val(countindex);
-
+        console.log(parseInt($("#countindex" + index).val()))
+        console.log(parseInt($("#visiblePages" + index).val()))
         $.jqPaginator('#pagination' + index, {
             totalPages: parseInt($("#countindex" + index).val()),
             visiblePages: parseInt($("#visiblePages" + index).val()),

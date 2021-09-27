@@ -4,6 +4,7 @@ let app = require("../../app")
 import "../style/style.scss"
 import 'cropperjs/dist/cropper.css';
 import Cropper from 'cropperjs';
+import E from "wangeditor";
 
 app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService', function ($rootScope, $scope, $state, $timeout, dataService) {
     $scope.init = function () {
@@ -15,32 +16,147 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         $scope.userProfileGet();
         $scope.profileBlogGet();
         $scope.rocketPosition();
-        $scope.introduceEdit()
+        // $scope.introduceEdit()
     };
 
 
     $scope.introduceEdit = function () {
-        let btn = document.body.querySelector("#introduce-edit");
+        // let btn = document.body.querySelector("#introduce-edit");
         let introduce = document.body.querySelector("#introduce");
-        btn.addEventListener("click", function () {
-            $rootScope.coco({
-                title: "设置",
-                el: "#introduce-edit-dialog",
-                okText: "提交",
-                buttonColor: '#03a9f4',
-            }).onClose(function (ok, cc, done) {
-                if (ok) {
-                    if (introduce.value.trim() !== "") {
-                        $scope.introduceSend(introduce.value.trim());
-                        done()
-                    } else {
-                        $rootScope.cubeWarning("error", "输入不能为空！");
-                    }
-                } else {
+        // btn.addEventListener("click", function () {
+        //     $rootScope.coco({
+        //         title: "设置",
+        //         el: "#introduce-edit-dialog",
+        //         okText: "提交",
+        //         buttonColor: '#03a9f4',
+        //     }).onClose(function (ok, cc, done) {
+        //         if (ok) {
+        //             if (introduce.value.trim() !== "") {
+        //                 $scope.introduceSend(introduce.value.trim());
+        //                 done()
+        //             } else {
+        //                 $rootScope.cubeWarning("error", "输入不能为空！");
+        //             }
+        //         } else {
+        //             done()
+        //         }
+        //     });
+        // });
+        $rootScope.coco({
+            title: "设置",
+            el: "#introduce-edit-dialog",
+            okText: "提交",
+            buttonColor: '#03a9f4',
+        }).onClose(function (ok, cc, done) {
+            if (ok) {
+                if (introduce.value.trim() !== "") {
+                    $scope.introduceSend(introduce.value.trim());
                     done()
+                } else {
+                    $rootScope.cubeWarning("error", "输入不能为空！");
                 }
-            });
+            } else {
+                done()
+            }
         });
+    };
+
+    $scope.talkComment = function (id, item, index) {
+        $scope.currentTalk = item;
+        $scope.talkCommentBlockShow = true;
+        $scope.talkCommentDialog();
+        $scope.talkCommentEditorCreate()
+        $timeout(function () {
+            $scope.talkCommentGet(id, item, index);
+        }, 500)
+    };
+
+    $scope.talkCommentDialog = function () {
+        $rootScope.coco({
+            title: "评论",
+            el: "#talk-comment-block",
+            width: "600px",
+            height: "650px"
+        }).onClose(function (ok, cc, done){
+            $scope.talkCommentEditor.destroy();
+            $scope.talkCommentEditor = null;
+            done();
+        });
+    };
+
+    $scope.talkCommentGet = function (id, item, index, page = 1) {
+        $rootScope.cubeLoading("加载中...")
+        dataService.callOpenApi("talk.comment.get", {
+            id: id,
+            page: page + ""
+        }, "common").then(function (data) {
+            $rootScope.swal.close()
+            if (!data.success) {
+                $rootScope.cubeWarning('error', data.msg || "未知错误")
+            } else {
+                item.commentData = data.content;
+                item.comment = data.length;
+                $scope.talkCommentData = data.content;
+                $timeout(function () {
+                    $scope.talk_comment_current_page = page;
+                    $scope.talkCommentPageCreate(data, id, item, index);
+                    $scope.talk_comment_page_created = true;
+                    $scope.talkCommentBlockShow = false;
+                }, 500)
+            }
+        })
+    };
+
+    $scope.talkCommentSend = function (id, item, index) {
+        item.comment = parseInt(item.comment) + 1
+        let text = $scope.talkCommentEditor.txt.text()
+        if (text === '') {
+            $rootScope.cubeWarning('warning', '内容不能为空')
+            return null
+        }
+        if (!$rootScope.userId) {
+            $rootScope.cubeWarning('error', '请先登录')
+            return null
+        }
+        dataService.callOpenApi('send.talk.comment', {
+            id: id,
+            index: index + "",
+            cubeid: $rootScope.userId,
+            text: text,
+            mode: $scope.currentTalkingMenu["key"],
+            comment: JSON.stringify(item.comment)
+        }, 'private').then(function (data) {
+            if (data.success) {
+                $rootScope.cubeWarning('success', '发布成功')
+                $scope.talkCommentEditor.txt.clear();
+                $scope.talkCommentGet(id, item)
+
+            } else {
+                $rootScope.cubeWarning('error', data.msg || '发布出错')
+            }
+        })
+    };
+
+    $scope.talkCommentPageCreate = function (data, id, item, index) {
+        $("#PageCount" + 'talkComment').val(data.length);
+        $("#PageSize" + 'talkComment').val(10);
+        if (!$scope.talk_comment_page_created || $scope.talkCommentBlockShow) {
+            $rootScope.loadpage(function (num, type) {
+                if (num !== $scope.talk_comment_current_page) {
+                    $scope.talkCommentGet(id, item, index, num)
+                }
+            }, 'talkComment')
+        }
+    };
+
+    $scope.talkCommentEditorCreate = function () {
+        $scope.talkCommentEditor = new E('#talk-comment-toolbar', "#talk-comment-text");
+        $scope.talkCommentEditor.config.menus = [
+            'emoticon'
+        ]
+        $scope.talkCommentEditor.config.showFullScreen = false
+        $scope.talkCommentEditor.config.height = 33;
+        $scope.talkCommentEditor.create();
     };
 
     $scope.introduceSend = function (s) {
@@ -264,7 +380,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         dataService.callOpenApi("profile.blog.get", {
             "page": page + "",
             "cube_id": $scope.profileId
-        }, "common").then(function (data) {
+        }, "private").then(function (data) {
             $rootScope.swal.close()
             if (data.success && data.length) {
                 if (data.content) {
@@ -293,7 +409,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         dataService.callOpenApi("profile.talk.get", {
             "page": page + "",
             "cube_id": $scope.profileId
-        }, "common").then(function (data) {
+        }, "private").then(function (data) {
             $rootScope.swal.close()
             if (data.success && data.length) {
                 if (data.content) {
@@ -371,7 +487,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         "name": "文章",
         "select": true,
         "func": $scope.profileBlogGet,
-        "eachFUnc": $scope.blog
+        "eachFunc": $scope.blog
     }, {
         "key": "talk",
         "name": "说说",
