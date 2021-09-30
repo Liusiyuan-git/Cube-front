@@ -16,32 +16,11 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         $scope.userProfileGet();
         $scope.profileBlogGet();
         $scope.rocketPosition();
-        // $scope.introduceEdit()
     };
 
 
     $scope.introduceEdit = function () {
-        // let btn = document.body.querySelector("#introduce-edit");
         let introduce = document.body.querySelector("#introduce");
-        // btn.addEventListener("click", function () {
-        //     $rootScope.coco({
-        //         title: "设置",
-        //         el: "#introduce-edit-dialog",
-        //         okText: "提交",
-        //         buttonColor: '#03a9f4',
-        //     }).onClose(function (ok, cc, done) {
-        //         if (ok) {
-        //             if (introduce.value.trim() !== "") {
-        //                 $scope.introduceSend(introduce.value.trim());
-        //                 done()
-        //             } else {
-        //                 $rootScope.cubeWarning("error", "输入不能为空！");
-        //             }
-        //         } else {
-        //             done()
-        //         }
-        //     });
-        // });
         $rootScope.coco({
             title: "设置",
             el: "#introduce-edit-dialog",
@@ -63,24 +42,41 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
 
     $scope.talkComment = function (id, item, index) {
         $scope.currentTalk = item;
-        $scope.talkCommentBlockShow = true;
-        $scope.talkCommentDialog();
-        $scope.talkCommentEditorCreate()
+        item.select = true;
         $timeout(function () {
+            $scope.talkCommentDialog(item);
+            $scope.talkCommentEditorCreate();
             $scope.talkCommentGet(id, item, index);
         }, 500)
     };
+
 
     $scope.talkCommentDialog = function () {
         $rootScope.coco({
             title: "评论",
             el: "#talk-comment-block",
             width: "600px",
-            height: "650px"
-        }).onClose(function (ok, cc, done){
+            height: "650px",
+            destroy: false,
+            hooks: {
+                open() {
+                },
+                opened() {
+                    console.log($scope.talkCommentData)
+                    $scope.$apply()
+                },
+                close() {
+                },
+                closed() {
+
+                }
+            },
+        }).onClose(function (ok, cc, done) {
             $scope.talkCommentEditor.destroy();
             $scope.talkCommentEditor = null;
-            done();
+            $rootScope.talkCommentData = null;
+            $scope.talk_comment_page_created = false;
+            done()
         });
     };
 
@@ -96,13 +92,14 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             } else {
                 item.commentData = data.content;
                 item.comment = data.length;
-                $scope.talkCommentData = data.content;
-                $timeout(function () {
-                    $scope.talk_comment_current_page = page;
-                    $scope.talkCommentPageCreate(data, id, item, index);
-                    $scope.talk_comment_page_created = true;
-                    $scope.talkCommentBlockShow = false;
-                }, 500)
+                $rootScope.talkCommentData = data.content;
+                if ($rootScope.talkCommentData) {
+                    $timeout(function () {
+                        $scope.talk_comment_current_page = page;
+                        $scope.talkCommentPageCreate(data, id, item, index);
+                        $scope.talk_comment_page_created = true;
+                    }, 500)
+                }
             }
         })
     };
@@ -140,7 +137,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     $scope.talkCommentPageCreate = function (data, id, item, index) {
         $("#PageCount" + 'talkComment').val(data.length);
         $("#PageSize" + 'talkComment').val(10);
-        if (!$scope.talk_comment_page_created || $scope.talkCommentBlockShow) {
+        if (!$scope.talk_comment_page_created) {
             $rootScope.loadpage(function (num, type) {
                 if (num !== $scope.talk_comment_current_page) {
                     $scope.talkCommentGet(id, item, index, num)
@@ -223,7 +220,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     $scope.userProfileGet = function () {
         $rootScope.cubeLoading("加载中...");
         dataService.callOpenApi("user.profile.get", {"cubeid": $rootScope.userId}, "private").then(function (data) {
-            $rootScope.swal.close()
+            $rootScope.swal.close();
             if (data.success) {
                 $scope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data.profile.image;
                 $scope.userName = data.profile.name;
