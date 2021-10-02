@@ -42,9 +42,9 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
 
     $scope.talkComment = function (id, item, index) {
         $scope.currentTalk = item;
-        item.select = true;
+        $scope.currentTalkIndex = index;
         $timeout(function () {
-            $scope.talkCommentDialog(item);
+            $scope.talkCommentDialog();
             $scope.talkCommentEditorCreate();
             $scope.talkCommentGet(id, item, index);
         }, 500)
@@ -58,19 +58,6 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             width: "600px",
             height: "650px",
             destroy: false,
-            hooks: {
-                open() {
-                },
-                opened() {
-                    console.log($scope.talkCommentData)
-                    $scope.$apply()
-                },
-                close() {
-                },
-                closed() {
-
-                }
-            },
         }).onClose(function (ok, cc, done) {
             $scope.talkCommentEditor.destroy();
             $scope.talkCommentEditor = null;
@@ -104,7 +91,10 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         })
     };
 
-    $scope.talkCommentSend = function (id, item, index) {
+    $scope.talkCommentSend = function () {
+        let item = $scope.currentTalk;
+        let id = $scope.currentTalk.id;
+        let index = $scope.currentTalkIndex;
         item.comment = parseInt(item.comment) + 1
         let text = $scope.talkCommentEditor.txt.text()
         if (text === '') {
@@ -120,7 +110,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             index: index + "",
             cubeid: $rootScope.userId,
             text: text,
-            mode: $scope.currentTalkingMenu["key"],
+            mode: 'new',
             comment: JSON.stringify(item.comment)
         }, 'private').then(function (data) {
             if (data.success) {
@@ -130,6 +120,27 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
 
             } else {
                 $rootScope.cubeWarning('error', data.msg || '发布出错')
+            }
+        })
+    };
+
+    $scope.talkCommentDelete = function (id, item_id, item, index) {
+        item.comment = parseInt(item.comment) - 1
+        $rootScope.confirm('info', '删除评论', '是否删除该条评论？', '确定').then(function (result) {
+            if (result.isConfirmed) {
+                dataService.callOpenApi('delete.talk.Comment', {
+                    id: id + "",
+                    cubeid: $rootScope.userId,
+                    talkid: item_id,
+                    index: index + "",
+                    comment: JSON.stringify(item.comment)
+                }, 'private').then(function (data) {
+                    if (!data.success) {
+                        $rootScope.cubeWarning('error', data.msg || '未知錯誤')
+                    } else {
+                        $scope.talkCommentGet(item_id, item)
+                    }
+                })
             }
         })
     };
