@@ -23,6 +23,11 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
 
     };
 
+    $scope.goToUserProfile = function () {
+        localStorage.setItem("profileId", $rootScope.userId);
+        window.open("http://127.0.0.1:3000/#!/main/community/profile?state=profile")
+    };
+
     $scope.filterSelect = function (i) {
         $scope.forumBlock.forEach(function (item) {
             item.select = i.key === item.key;
@@ -79,7 +84,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         })
     };
 
-    $scope.userProfileGet = function (){
+    $scope.userProfileGet = function () {
         dataService.callOpenApi("user.profile.get", {"cubeid": $rootScope.userId}, "private").then(function (data) {
             if (data.success) {
                 $rootScope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data.profile.image;
