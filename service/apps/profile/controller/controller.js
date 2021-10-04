@@ -18,6 +18,45 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         $scope.rocketPosition();
     };
 
+    $scope.nameEdit = function () {
+        let introduce = document.body.querySelector("#name");
+        $rootScope.coco({
+            title: "设置",
+            el: "#name-edit-dialog",
+            okText: "提交",
+            buttonColor: '#03a9f4',
+        }).onClose(function (ok, cc, done) {
+            if (ok) {
+                if (introduce.value.trim() !== "") {
+                    $scope.nameSend(introduce.value.trim());
+                    done()
+                } else {
+                    $rootScope.cubeWarning("error", "输入不能为空！");
+                }
+            } else {
+                done()
+            }
+        });
+    };
+
+    $scope.nameSend = function (s) {
+        if (!$scope.loginStatusCheck()) {
+            $rootScope.cubeWarning('error', '请先登录')
+            return null
+        }
+        dataService.callOpenApi("user.name.send", {
+            "cubeid": $rootScope.userId,
+            "name": s
+        }, "private").then(function (data) {
+            if (data.success) {
+                $scope.userProfile.name = s;
+                $scope.userName = s;
+                $rootScope.cubeWarning("success", "修改成功")
+            } else {
+                $rootScope.cubeWarning("success", "未知错误")
+            }
+        })
+    };
 
     $scope.introduceEdit = function () {
         let introduce = document.body.querySelector("#introduce");
@@ -67,7 +106,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         });
     };
 
-    $scope.talkCommentGet = function (id, item, index, page = 1) {
+    $scope.talkCommentGet = function (id, item, page = 1) {
         $rootScope.cubeLoading("加载中...")
         dataService.callOpenApi("talk.comment.get", {
             id: id,
@@ -83,7 +122,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                 if ($rootScope.talkCommentData) {
                     $timeout(function () {
                         $scope.talk_comment_current_page = page;
-                        $scope.talkCommentPageCreate(data, id, item, index);
+                        $scope.talkCommentPageCreate(data, id, item);
                         $scope.talk_comment_page_created = true;
                     }, 500)
                 }
@@ -107,17 +146,15 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         }
         dataService.callOpenApi('send.talk.comment', {
             id: id,
-            index: index + "",
             cubeid: $rootScope.userId,
             text: text,
-            mode: 'new',
-            comment: JSON.stringify(item.comment)
         }, 'private').then(function (data) {
             if (data.success) {
                 $rootScope.cubeWarning('success', '发布成功')
                 $scope.talkCommentEditor.txt.clear();
+                $scope.profileTalkDataCount[2 * index + 1] = parseInt($scope.profileTalkDataCount[2 * index + 1]) + 1;
+                $scope.talk_comment_page_created = false;
                 $scope.talkCommentGet(id, item)
-
             } else {
                 $rootScope.cubeWarning('error', data.msg || '发布出错')
             }
@@ -125,6 +162,10 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.talkCommentDelete = function (id, item_id, item, index) {
+        if (!$scope.loginStatusCheck()) {
+            $rootScope.cubeWarning('error', '请先登录')
+            return null
+        }
         item.comment = parseInt(item.comment) - 1
         $rootScope.confirm('info', '删除评论', '是否删除该条评论？', '确定').then(function (result) {
             if (result.isConfirmed) {
@@ -145,13 +186,13 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         })
     };
 
-    $scope.talkCommentPageCreate = function (data, id, item, index) {
+    $scope.talkCommentPageCreate = function (data, id, item) {
         $("#PageCount" + 'talkComment').val(data.length);
         $("#PageSize" + 'talkComment').val(10);
         if (!$scope.talk_comment_page_created) {
             $rootScope.loadpage(function (num, type) {
                 if (num !== $scope.talk_comment_current_page) {
-                    $scope.talkCommentGet(id, item, index, num)
+                    $scope.talkCommentGet(id, item, num)
                 }
             }, 'talkComment')
         }
@@ -162,7 +203,8 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         $scope.talkCommentEditor.config.menus = [
             'emoticon'
         ]
-        $scope.talkCommentEditor.config.showFullScreen = false
+        $scope.talkCommentEditor.config.showFullScreen = false;
+        $scope.talkCommentEditor.config.showMenuTooltips = false
         $scope.talkCommentEditor.config.height = 33;
         $scope.talkCommentEditor.create();
     };
@@ -177,7 +219,8 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             "introduce": s
         }, "private").then(function (data) {
             if (data.success) {
-                $scope.userProfile.introduce = s
+                $scope.userProfile.introduce = s;
+                $scope.userIntroduce = s;
                 $rootScope.cubeWarning("success", "修改成功")
             } else {
                 $rootScope.cubeWarning("success", "未知错误")
@@ -230,11 +273,12 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
 
     $scope.userProfileGet = function () {
         $rootScope.cubeLoading("加载中...");
-        dataService.callOpenApi("user.profile.get", {"cubeid": $rootScope.userId}, "private").then(function (data) {
+        dataService.callOpenApi("user.profile.get", {"cubeid": $scope.profileId}, "common").then(function (data) {
             $rootScope.swal.close();
             if (data.success) {
-                $scope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data.profile.image;
-                $scope.userName = data.profile.name;
+                $scope.userImage = "http://47.119.151.14:3001/user/image/" + $scope.profileId + "/" + data.profile[0];
+                $scope.userName = data.profile[1];
+                $scope.userIntroduce = data.profile[2];
                 $scope.userProfile = data.profile
             }
         })
@@ -345,12 +389,25 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         }, 'private').then(function (data) {
             $rootScope.swal.close()
             if (data.success) {
-                $rootScope.cubeWarning("success", "上传成功")
+                $rootScope.cubeWarning("success", "上传成功");
+                $scope.userImageUpdate();
             } else {
                 $rootScope.cubeWarning("error", "上传出错")
             }
             $scope.imageDialogClose();
             done()
+        })
+    };
+
+    $scope.userImageUpdate = function () {
+        dataService.callOpenApi('user.image.update', {
+            cubeid: $rootScope.userId,
+        }, 'private').then(function (data) {
+            if (data.success) {
+                $rootScope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data.image;
+                localStorage.setItem("userImage", data.image);
+
+            }
         })
     };
 
@@ -388,7 +445,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         dataService.callOpenApi("profile.blog.get", {
             "page": page + "",
             "cube_id": $scope.profileId
-        }, "private").then(function (data) {
+        }, "common").then(function (data) {
             $rootScope.swal.close()
             if (data.success && data.length) {
                 if (data.content) {
@@ -417,11 +474,13 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         dataService.callOpenApi("profile.talk.get", {
             "page": page + "",
             "cube_id": $scope.profileId
-        }, "private").then(function (data) {
+        }, "common").then(function (data) {
             $rootScope.swal.close()
             if (data.success && data.length) {
                 if (data.content) {
-                    $scope.profileTalkData = data.content
+                    $scope.profileTalkData = data.content;
+                    $scope.profileTalkDataCount = data.count;
+                    $scope.profileTalkDataMode = data.mode;
                     $scope.talkImagesSet(data.content);
                 }
                 $scope.rocket();
@@ -430,6 +489,19 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                 $scope.page_created = true;
             } else {
                 $scope.content = null
+            }
+        })
+    };
+
+    $scope.talkLike = function (id, item, index) {
+        dataService.callOpenApi('talk.like', {
+            id: id,
+        }, 'common').then(function (data) {
+            if (!data.success) {
+                $rootScope.cubeWarning('error', data.msg || '未知錯誤')
+            } else {
+                $rootScope.cubeWarning('success', '感谢鼓励！');
+                $scope.profileTalkDataCount[2 * index] = parseInt($scope.profileTalkDataCount[2 * index]) + 1
             }
         })
     };
@@ -488,6 +560,11 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
 
     $scope.blog = function (id) {
         window.open("http://127.0.0.1:3000/#!/main/community/blog?id=" + id)
+    };
+
+    $scope.goToUserProfile = function (cube_id) {
+        localStorage.setItem("profileId", cube_id);
+        window.open("http://127.0.0.1:3000/#!/main/community/profile?state=profile")
     };
 
     $scope.options = [{

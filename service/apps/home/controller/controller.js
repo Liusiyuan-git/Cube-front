@@ -87,9 +87,9 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     $scope.userProfileGet = function () {
         dataService.callOpenApi("user.profile.get", {"cubeid": $rootScope.userId}, "private").then(function (data) {
             if (data.success) {
-                $rootScope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data.profile.image;
-                $scope.userName = data.profile.name;
-                $scope.userIntroduce = data.profile.introduce;
+                $rootScope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data.profile[0];
+                $scope.userName = data.profile[1];
+                $scope.userIntroduce = data.profile[2];
             }
         })
     };
@@ -98,10 +98,10 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         let element = document.getElementById("collect-content-block")
         if (!$scope.collect_up) {
             element.style.transform = "translate3d(0px, -180px, 0px)";
-            $scope.collect_up = true
+            $scope.collect_up = true;
         } else {
             element.style.transform = "translate3d(0px, 0px, 0px)";
-            $scope.collect_up = false
+            $scope.collect_up = false;
         }
     }
 
