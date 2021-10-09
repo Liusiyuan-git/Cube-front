@@ -9,10 +9,10 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         }, 300);
         $scope.initParams();
         $scope.contentDataGet();
-        $scope.userProfileGet()
+        $scope.userProfileGet();
         $scope.scroll();
         $timeout(function () {
-            $scope.collectionGet()
+            $scope.collectionGet();
         }, 500);
     };
 
@@ -76,7 +76,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         dataService.callOpenApi("cube.collection.get", {"cubeid": $rootScope.userId}, "private").then(function (data) {
             if (data.success) {
                 $scope.cubeCollection = data.content;
-                if (data.content.length > 5) {
+                if (data.content && data.content.length > 5) {
                     $scope.collect_up = false;
                     $scope.intervalId = setInterval($scope.collectBlockTransform, 3000)
                 }
@@ -87,7 +87,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     $scope.userProfileGet = function () {
         dataService.callOpenApi("user.profile.get", {"cubeid": $rootScope.userId}, "private").then(function (data) {
             if (data.success) {
-                $rootScope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data.profile[0];
+                $rootScope.userImage = data.profile[0] ? "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data.profile[0] : null
                 $scope.userName = data.profile[1];
                 $scope.userIntroduce = data.profile[2];
             }
@@ -117,14 +117,15 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
             if (data.success && data.length) {
                 if (data.content) {
                     data.content.forEach(function (item) {
-                        let time = item.date.split(" ")[0].split("-").join("")
-                        item.author = item.name
+                        let time = item.date.split(" ")[0].split("-").join("");
+                        item.author = item.name;
                         if (item.cover) {
                             let cover = ["http://47.119.151.14:3001/blog", item["cube_id"], time, item.cover].join("/")
                             item.cover = cover
                         }
                     })
                 }
+                $scope.blogProfile = data.profile;
                 $scope.rocket();
                 $scope.content = data.content;
                 $scope.current_page = page;

@@ -8,8 +8,8 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
             let frame = document.getElementById("login-dialog");
             frame.className = "login-dialog in";
         }, 1000);
-        $scope.count_save = true
-        $scope.loginStatusCheck()
+        $scope.count_save = true;
+        $scope.loginStatusCheck();
     };
 
     $scope.initParams = function () {

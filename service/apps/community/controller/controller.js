@@ -14,7 +14,7 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
             let second = Math.floor(currenttime - starttime);
             if (second <= 86400) {
                 $rootScope.userId = localStorage.getItem("CubeId");
-                $rootScope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + localStorage.getItem("userImage");
+                $rootScope.userImage = localStorage.getItem("userImage") ? "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + localStorage.getItem("userImage") : null;
                 $rootScope.login = true;
                 return true
             } else {
