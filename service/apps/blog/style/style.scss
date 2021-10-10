@@ -94,11 +94,15 @@
               cursor: pointer;
               justify-content: center;
             }
+
+            .button:active{
+              transform: scale(.9);
+            }
           }
         }
 
         .cover {
-          margin: 30px 0;
+          margin: 30px 0 0 0;
 
           .image {
             vertical-align: top;
@@ -122,6 +126,7 @@
         }
 
         .blog-text {
+          margin-top: 30px;
           min-height: 400px;
         }
       }
@@ -315,12 +320,9 @@
             height: 34px;
             width: 34px;
             border-radius: 100%;
-            border: 1px solid #c0c4cc;
             justify-content: center;
             align-items: center;
             display: flex;
-            background: #c0c4cc;
-            color: $color-white;
           }
         }
 
