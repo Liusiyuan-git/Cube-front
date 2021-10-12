@@ -37,6 +37,9 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             if (!data.success) {
                 $rootScope.cubeWarning('error', data.msg || "未知错误")
             } else if (data.length !== 0) {
+                data.content.forEach(function (item) {
+                    item['user_image'] = item['user_image'] || null;
+                });
                 $scope.talkData = data.content;
                 $scope.talkDataCount = data.count;
                 $scope.talkDataMode = data.mode;
@@ -81,7 +84,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                 flipVertical: 4,
             },
         });
-        viewer.show()
+        viewer.show();
     };
 
     $scope.pageCreate = function (data) {
@@ -103,7 +106,15 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             }
             item.select = item.key === key
         })
-        $scope.talkDataGet()
+        if (key === "care") {
+            $scope.profileCare().then(function (){
+                $scope.careSelect(0)
+            },function (){
+                $scope.talkData = null;
+            });
+        } else {
+            $scope.talkDataGet();
+        }
     };
 
     $scope.talkEditorInit = function () {
@@ -119,7 +130,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             if ($scope.talkImages.length >= 3) {
                 $rootScope.cubeWarning('info', "上传图片不得超过3张");
             } else {
-                $scope.getImgBase64(resultFiles)
+                $scope.getImgBase64(resultFiles);
             }
         }
         $scope.talkEditor.config.showLinkImg = false;
@@ -335,6 +346,68 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         $scope.talkCommentEditor.create();
     };
 
+    $scope.profileCare = function () {
+        let defer = $q.defer();
+        dataService.callOpenApi('user.profile.care', {
+            cubeid: $rootScope.userId,
+        }, 'common').then(function (data) {
+            if (data.success && data["profileCare"]) {
+                data["profileCare"].forEach(function (item) {
+                    item.select = false;
+                });
+                $scope.profileCareData = data["profileCare"];
+                defer.resolve();
+            }else{
+                defer.reject();
+            }
+        })
+        return defer.promise;
+    };
+
+    $scope.careSelect = function (index) {
+        $scope.currentCareId = $scope.profileCareData[index]['cube_id'];
+        $scope.profileCareData.forEach(function (item, i) {
+            $scope.profileCareData[index]['select'] = i === index;
+        });
+        $scope.careDataGet($scope.currentCareId);
+    };
+
+    $scope.careDataGet = function (cube_id, page = 1) {
+        $rootScope.cubeLoading("加载中...");
+        dataService.callOpenApi("profile.talk.get", {
+            "page": page + "",
+            "cube_id": cube_id
+        }, "common").then(function (data) {
+            $rootScope.swal.close();
+            if (!data.success) {
+                $rootScope.cubeWarning('error', data.msg || "未知错误");
+            } else if (data.length !== 0) {
+                data.content.forEach(function (item) {
+                    item['user_image'] = item['user_image'] || null;
+                });
+                $scope.talkData = data.content;
+                $scope.talkDataCount = data.count;
+                $scope.talkDataMode = data.mode;
+                $scope.talkImagesSet(data.content);
+                $scope.current_page = page;
+                $scope.pageCreateCare(data);
+                $scope.page_created = true;
+            }
+        })
+    };
+
+    $scope.pageCreateCare = function (data) {
+        $("#PageCount").val(data.length);
+        $("#PageSize").val(10);
+        if (!$scope.page_created) {
+            $rootScope.loadpage(function (num) {
+                if (num !== $scope.current_page) {
+                    $scope.careDataGet($scope.currentCareId, num);
+                }
+            })
+        }
+    };
+
     $scope.talkingMenu = [{
         key: "new",
         name: "最新",
@@ -344,7 +417,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         name: "精华",
         select: false
     }, {
-        key: "concern",
+        key: "care",
         name: "关注",
         select: false
     }]

@@ -703,6 +703,104 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         })
     };
 
+    $scope.profileLeave = function (page = 1) {
+        $rootScope.cubeLoading("加载中...");
+        dataService.callOpenApi('profile.leave.get', {
+            "page": page + "",
+            "cube_id": $scope.profileId
+        }, "common").then(function (data) {
+            $rootScope.swal.close()
+            if (data.success && data.length) {
+                if (data.content) {
+                    data.content.forEach(function (item){
+                        item.image = item.image || null;
+                    });
+                    console.log(data.content)
+                    $scope.profileLeaveData = data.content || null;
+                }
+                $scope.rocket();
+                $scope.current_page = page;
+                $scope.pageCreateLeave(data);
+                $scope.page_created = true;
+            } else {
+                $scope.profileLeaveData = null;
+            }
+        })
+    };
+
+    $scope.pageCreateLeave = function (data) {
+        $("#PageCountleave").val(data.length);
+        $("#PageSizeleave").val(10);
+        if (!$scope.page_created) {
+            $rootScope.loadpage(function (num, type) {
+                if (num !== $scope.current_page) {
+                    $scope.profileLeave(num);
+                }
+            }, "leave")
+        }
+    };
+
+    $scope.toLeave = function () {
+        $scope.leaveDialog();
+        $scope.leaveEditorCreate();
+    };
+
+    $scope.leaveDialog = function () {
+        $rootScope.coco({
+            title: "留言",
+            el: "#leave-block",
+            width: "600px",
+            height: "650px",
+            destroy: false,
+            hooks: {
+                closed() {
+                    $scope.leaveEditor.txt.clear();
+                    $scope.leaveEditor.destroy();
+                    $scope.leaveEditor = null;
+                }
+            },
+        }).onClose(function (ok, cc, done) {
+            if (ok) {
+                let text = $scope.leaveEditor.txt.text()
+                if (text === '') {
+                    $rootScope.cubeWarning('warning', '内容不能为空');
+                    return null
+                }
+                if (!$scope.loginStatusCheck()) {
+                    $rootScope.cubeWarning('error', '请先登录');
+                    return null
+                }
+                dataService.callOpenApi('profile.leave.set', {
+                    cubeId: $scope.profileId,
+                    leaveId: $rootScope.userId,
+                    text: text,
+                }, 'private').then(function (data) {
+                    if (data.success) {
+                        $rootScope.cubeWarning('success', '留言成功');
+                        done()
+                        $scope.profileLeave();
+                    } else {
+                        $rootScope.cubeWarning('error', data.msg || '留言出错');
+                    }
+                })
+            } else {
+                done()
+            }
+        });
+    };
+
+    $scope.leaveEditorCreate = function () {
+        $scope.leaveEditor = new E('#leave-toolbar', "#leave-text");
+        $scope.leaveEditor.config.menus = [
+            'emoticon'
+        ];
+        $scope.leaveEditor.config.showFullScreen = false;
+        $scope.leaveEditor.config.menuTooltipPosition = 'up';
+        $scope.leaveEditor.config.showMenuTooltips = false;
+        $scope.leaveEditor.config.height = 33;
+        $scope.leaveEditor.create();
+    };
+
     $scope.options = [{
         "key": "blog",
         "name": "文章",
@@ -733,7 +831,8 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     }, {
         "key": "leave",
         "name": "留言板",
-        "select": false
+        "select": false,
+        "func": $scope.profileLeave,
     }, {
         "key": "message",
         "name": "消息",
