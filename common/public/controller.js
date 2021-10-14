@@ -9,6 +9,7 @@ import "../../resources/icon/iconfont.css"
 import "../styles/common.scss"
 import "../styles/common.alert.scss"
 import "../styles/common.coco.scss"
+import "./stomp"
 import coco from 'coco-modal'
 
 app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', 'dataService', function ($rootScope, $scope, $state, $q, dataService) {
@@ -22,7 +23,7 @@ app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', 'dat
         $rootScope.userId = null;
         $rootScope.login = false;
         $scope.wait = false;
-        $rootScope.coco = coco
+        $rootScope.coco = coco;
     };
 
     $rootScope.showWaiting = function () {

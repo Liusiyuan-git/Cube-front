@@ -47,6 +47,8 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                 $scope.current_page = page;
                 $scope.pageCreate(data);
                 $scope.page_created = true;
+            }else{
+                $scope.talkData = null;
             }
         })
     };
@@ -100,6 +102,8 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.menuSelect = function (key) {
+        $scope.page_created = false;
+        $scope.talkData = null;
         $scope.talkingMenu.forEach(function (item) {
             if (item.key === key) {
                 $scope.currentTalkingMenu = item
@@ -110,7 +114,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             $scope.profileCare().then(function (){
                 $scope.careSelect(0)
             },function (){
-                $scope.talkData = null;
+                $scope.profileCareData = null;
             });
         } else {
             $scope.talkDataGet();
@@ -256,6 +260,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             $rootScope.cubeWarning('error', '请先登录');
             return null
         }
+        $rootScope.cubeLoading("发送中...");
         dataService.callOpenApi('send.talk', {
             cubeid: $rootScope.userId,
             text: text,
@@ -392,6 +397,8 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                 $scope.current_page = page;
                 $scope.pageCreateCare(data);
                 $scope.page_created = true;
+            }else{
+                $scope.talkData = null;
             }
         })
     };

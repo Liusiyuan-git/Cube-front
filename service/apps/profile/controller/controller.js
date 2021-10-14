@@ -28,7 +28,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             cubeid: $scope.profileId,
         }, "private").then(function (data) {
             if (data.success) {
-                $scope.careComfirm = data["exist"]
+                $scope.careComfirm = data["exist"];
             }
         })
     };
@@ -348,9 +348,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.userProfileGet = function () {
-        $rootScope.cubeLoading("加载中...");
         dataService.callOpenApi("user.profile.get", {"cubeid": $scope.profileId}, "common").then(function (data) {
-            $rootScope.swal.close();
             if (data.success) {
                 $scope.userImage = data.profile[0] ? "http://47.119.151.14:3001/user/image/" + $scope.profileId + "/" + data.profile[0] : null;
                 $scope.userName = data.profile[1];

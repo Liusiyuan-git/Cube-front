@@ -4,11 +4,29 @@ import "jscroll"
 
 app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataService", function ($rootScope, $scope, $state, $timeout, dataService) {
     $scope.init = function () {
+        $scope.rabbitConnection();
         $scope.user_menu_show = false;
         $rootScope.userId = "";
         if ($state.params.state) {
             $scope.select($state.params.state)
         }
+    };
+
+    $scope.rabbitConnection = function () {
+        var ws = new WebSocket('ws://81.68.104.55:15674/ws');
+        var client = Stomp.over(ws);
+        var on_connect = function() {
+            console.log('connected');
+            var id = client.subscribe('/logs', function(d) {
+                var p = JSON.parse(d.body);
+                console.log(p)
+            });
+        };
+        var on_error =  function() {
+            ws.close()
+            console.log('error');
+        };
+        client.connect('admin', '201020120402ssS~', on_connect, on_error, '/');
     };
 
     $scope.selectAndGo = function (state) {
@@ -65,8 +83,8 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
         $state.go("home", {state: "home"})
     };
 
-    $scope.profile = function (){
-        localStorage.setItem("profileId",$rootScope.userId);
+    $scope.profile = function () {
+        localStorage.setItem("profileId", $rootScope.userId);
         window.open("http://127.0.0.1:3000/#!/main/community/profile?state=profile")
     };
 
@@ -87,7 +105,7 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
         name: "首页",
         state: "home",
         select: true
-    },{
+    }, {
         id: 1,
         key: "talking",
         name: "江湖",
