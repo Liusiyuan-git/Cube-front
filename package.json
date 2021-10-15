@@ -72,6 +72,7 @@
     "polyfill": "^0.1.0",
     "process": "^0.11.10",
     "sass": "^1.32.8",
+    "stomp": "^0.1.1",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
     "style-loader": "^2.0.0",

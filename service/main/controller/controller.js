@@ -13,19 +13,34 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
     };
 
     $scope.rabbitConnection = function () {
+        console.log('starting...');
+        // Stomp.js boilerplate
         var ws = new WebSocket('ws://81.68.104.55:15674/ws');
+        // Init Client
         var client = Stomp.over(ws);
-        var on_connect = function() {
-            console.log('connected');
-            var id = client.subscribe('/logs', function(d) {
+        // SockJS does not support heart-beat: disable heart-beats
+        // client will send heartbeats every xxxms
+        client.heartbeat.outgoing = 5000;
+        // client does not want to receive heartbeats
+        client.heartbeat.incoming = 5000;
+        // Declare on_connect
+        var on_connect = function (x) {
+            client.subscribe("/exchange/logs", function (d) {
+                // update result
                 var p = JSON.parse(d.body);
                 console.log(p)
+                // disconnect client
+                // when close the brower, it will be closed automatically too
+                client.disconnect(function() {
+                    console.log("See you next time!");
+                });
             });
         };
-        var on_error =  function() {
-            ws.close()
+        // Declare on_error
+        var on_error = function () {
             console.log('error');
         };
+        // Conect to RabbitMQ
         client.connect('admin', '201020120402ssS~', on_connect, on_error, '/');
     };
 
