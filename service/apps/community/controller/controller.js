@@ -5,7 +5,9 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
     function ($rootScope, $scope, $state, $timeout, dataService) {
         $scope.initCommunity = function () {
             $rootScope.cubelocation = "community";
+            $rootScope.messageCount = 0;
             $scope.loginStatusCheck();
+            $scope.rabbitMqInit();
         };
 
         $scope.loginStatusCheck = function () {
@@ -28,7 +30,26 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
             }
         };
 
-        $scope.rabbitmq = function () {
 
-        }
+        $scope.rabbitMqInit = function () {
+            if (!$rootScope.userId) {
+                return
+            }
+            let ws = new WebSocket('ws://81.68.104.55:15674/ws');
+            let client = Stomp.over(ws);
+            client.debug = null;
+            let on_connect = function (x) {
+                client.subscribe("/amq/queue/" + $rootScope.userId, function () {
+                    $rootScope.messageCount += 1;
+                    client.disconnect(function () {
+                        $scope.rabbitMqInit();
+                    });
+                });
+            };
+            let on_error = function () {
+                ws.close();
+                $scope.rabbitMqInit();
+            };
+            client.connect('admin', '201020120402ssS~', on_connect, on_error, '/');
+        };
     }])

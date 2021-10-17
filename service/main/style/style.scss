@@ -55,7 +55,7 @@ body, button, input, select, textarea {
 
         .menu-item {
           font-size: 15px;
-          display: block;
+          display: flex;
           position: relative;
           padding: 8px 30px;
           cursor: pointer;
@@ -63,6 +63,20 @@ body, button, input, select, textarea {
           -webkit-transition: color .2s ease;
           transition: color .2s ease;
           white-space: nowrap;
+          align-items: center;
+          .menu-message{
+            min-width: 16px;
+            height: 16px;
+            padding: 0 3px;
+            border-radius: 8px;
+            line-height: 16px;
+            font-size: 12px;
+            text-align: center;
+            color: $color-white;
+            margin: 0 3px;
+            box-sizing: border-box;
+            background-color: #FA5A57;
+          }
         }
 
         .menu-item-select {
@@ -132,7 +146,15 @@ body, button, input, select, textarea {
         margin: 0 25px;
       }
 
-      .round {
+      .unlogin-round {
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+
+      .login-round {
         width: 34px;
         height: 34px;
         display: flex;

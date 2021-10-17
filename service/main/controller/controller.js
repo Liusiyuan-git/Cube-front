@@ -4,44 +4,11 @@ import "jscroll"
 
 app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataService", function ($rootScope, $scope, $state, $timeout, dataService) {
     $scope.init = function () {
-        $scope.rabbitConnection();
         $scope.user_menu_show = false;
         $rootScope.userId = "";
         if ($state.params.state) {
             $scope.select($state.params.state)
         }
-    };
-
-    $scope.rabbitConnection = function () {
-        console.log('starting...');
-        // Stomp.js boilerplate
-        var ws = new WebSocket('ws://81.68.104.55:15674/ws');
-        // Init Client
-        var client = Stomp.over(ws);
-        // SockJS does not support heart-beat: disable heart-beats
-        // client will send heartbeats every xxxms
-        client.heartbeat.outgoing = 5000;
-        // client does not want to receive heartbeats
-        client.heartbeat.incoming = 5000;
-        // Declare on_connect
-        var on_connect = function (x) {
-            client.subscribe("/exchange/logs", function (d) {
-                // update result
-                var p = JSON.parse(d.body);
-                console.log(p)
-                // disconnect client
-                // when close the brower, it will be closed automatically too
-                client.disconnect(function() {
-                    console.log("See you next time!");
-                });
-            });
-        };
-        // Declare on_error
-        var on_error = function () {
-            console.log('error');
-        };
-        // Conect to RabbitMQ
-        client.connect('admin', '201020120402ssS~', on_connect, on_error, '/');
     };
 
     $scope.selectAndGo = function (state) {
@@ -134,6 +101,12 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
         select: false
     }, {
         id: 3,
+        key: "message",
+        name: "消息动态",
+        state: "about",
+        select: false
+    },{
+        id: 4,
         key: "about",
         name: "关于Cube",
         state: "about",
