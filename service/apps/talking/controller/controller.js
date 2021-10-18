@@ -24,7 +24,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
 
     $scope.goToUserProfile = function (cube_id) {
         localStorage.setItem("profileId", cube_id);
-        window.open("http://127.0.0.1:3000/#!/main/community/profile?state=profile")
+        $state.go("profile", {state: 'profile'});
     };
 
     $scope.talkDataGet = function (mode = "new", page = 1) {

@@ -41,6 +41,7 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
             let on_connect = function (x) {
                 client.subscribe("/amq/queue/" + $rootScope.userId, function () {
                     $rootScope.messageCount += 1;
+                    $scope.$apply();
                     client.disconnect(function () {
                         $scope.rabbitMqInit();
                     });

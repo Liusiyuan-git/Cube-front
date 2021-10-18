@@ -461,7 +461,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             cubeid: $rootScope.userId,
             mode: "private"
         }, 'private').then(function (data) {
-            $rootScope.swal.close()
+            $rootScope.swal.close();
             if (data.success) {
                 $rootScope.cubeWarning("success", "上传成功");
                 $scope.userImageUpdate();
@@ -831,10 +831,6 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         "name": "留言板",
         "select": false,
         "func": $scope.profileLeave,
-    }, {
-        "key": "message",
-        "name": "消息",
-        "select": false
     }]
 
 }])
