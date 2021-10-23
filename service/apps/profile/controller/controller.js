@@ -551,7 +551,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             $rootScope.swal.close()
             if (data.success && data.length) {
                 if (data.content) {
-                    $scope.profileTalkData = data.content || null;
+                    $scope.profileTalkData = data.content;
                     $scope.profileTalkDataCount = data.count;
                     $scope.profileTalkDataMode = data.mode;
                     $scope.talkImagesSet(data.content);
@@ -678,7 +678,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
 
     $scope.goToUserProfile = function (cube_id) {
         localStorage.setItem("profileId", cube_id);
-        window.open("http://127.0.0.1:3000/#!/main/community/profile?state=profile");
+        $state.go("profile", {state: 'profile'});
     };
 
     $scope.profileCare = function () {
@@ -710,10 +710,9 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             $rootScope.swal.close()
             if (data.success && data.length) {
                 if (data.content) {
-                    data.content.forEach(function (item){
+                    data.content.forEach(function (item) {
                         item.image = item.image || null;
                     });
-                    console.log(data.content)
                     $scope.profileLeaveData = data.content || null;
                 }
                 $scope.rocket();

@@ -37,6 +37,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     };
 
     $scope.filterChildSelect = function (i) {
+        $scope.page_created  =false;
         $scope.currentFilter.child.forEach(function (item) {
             item.select = item.key === i.key;
         })
@@ -62,6 +63,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
 
 
     $scope.menuSelect = function (key) {
+        $scope.page_created = false;
         $scope.homeMenu.forEach(function (item) {
             item.select = item.key === key
         })

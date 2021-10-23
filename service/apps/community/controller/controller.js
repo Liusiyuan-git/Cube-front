@@ -7,7 +7,22 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
             $rootScope.cubelocation = "community";
             $rootScope.messageCount = 0;
             $scope.loginStatusCheck();
-            $scope.rabbitMqInit();
+            $scope.messageProfileGet();
+        };
+
+        $scope.messageProfileGet = function () {
+            if (!$rootScope.userId) {
+                return
+            }
+            dataService.callOpenApi("message.profile.get", {
+                "cube_id": $rootScope.userId
+            }, "private").then(function (data){
+                if(data.success){
+                    $rootScope.messageCount = data['profile'][0];
+                    $scope.messageTalkCount = data['profile'][2];
+                }
+                $scope.rabbitMqInit();
+            });
         };
 
         $scope.loginStatusCheck = function () {
@@ -30,17 +45,13 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
             }
         };
 
-
         $scope.rabbitMqInit = function () {
-            if (!$rootScope.userId) {
-                return
-            }
             let ws = new WebSocket('ws://81.68.104.55:15674/ws');
             let client = Stomp.over(ws);
             client.debug = null;
             let on_connect = function (x) {
-                client.subscribe("/amq/queue/" + $rootScope.userId, function () {
-                    $rootScope.messageCount += 1;
+                client.subscribe("/amq/queue/" + $rootScope.userId, function (d) {
+                    $rootScope.messageCount = d.body;
                     $scope.$apply();
                     client.disconnect(function () {
                         $scope.rabbitMqInit();

@@ -12,9 +12,32 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             let frame = document.getElementById("container");
             frame.className = "container in";
         }, 300);
+        $scope.menuSelect("message");
+        $scope.userMessageClean()
+    };
+
+    $scope.blogGet = function () {
+        $scope.profileCare().then(function (data) {
+            if (data.length) {
+                $scope.careSelect(0);
+            }
+        }, function () {
+
+        })
+    };
+
+    $scope.talkGet = function () {
+        $scope.profileCare().then(function (data) {
+            if (data.length) {
+                $scope.careSelect(0);
+            }
+        }, function () {
+
+        })
     };
 
     $scope.menuSelect = function (key) {
+        $scope.page_created = false;
         $scope.messageMenu.forEach(function (item) {
             if (item.key === key) {
                 $scope.currentMessageMenu = item;
@@ -24,23 +47,316 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         })
     };
 
+    $scope.goToUserProfile = function (cube_id) {
+        localStorage.setItem("profileId", cube_id);
+        $state.go("profile", {state: 'profile'});
+    };
+
+    $scope.userMessageClean = function (){
+        if (!$scope.loginStatusCheck()) {
+            return null
+        }
+        dataService.callOpenApi('user.message.clean', {
+            id: $rootScope.userId,
+        }, 'private').then(function (){
+            $scope.messageProfileGet()
+        })
+    };
+
+    $scope.messageProfileGet = function () {
+        if (!$scope.loginStatusCheck()) {
+            return
+        }
+        dataService.callOpenApi("message.profile.get", {
+            "cube_id": $rootScope.userId
+        }, "private").then(function (data){
+            if(data.success){
+                $rootScope.messageCount = data['profile'][0];
+                $scope.messageBlogCount = data['profile'][1];
+                $scope.messageTalkCount = data['profile'][2];
+            }
+
+        });
+    };
+
     $scope.userMessageGet = function (page = 1) {
         if (!$scope.loginStatusCheck()) {
             return null
         }
+        $rootScope.cubeLoading("加载中...");
         dataService.callOpenApi('user.message.get', {
             id: $rootScope.userId,
-            page: page
+            page: page + ""
         }, 'private').then(function (data) {
+            $rootScope.swal.close();
             if (!data.success) {
                 $rootScope.cubeWarning('error', data.msg || '未知錯誤')
-            } else {
-                $scope.userMessageData = data.content
+            } else if (data.length) {
+                $scope.userMessageData = data.content || null;
                 $scope.current_page = page;
                 $scope.pageCreateMessage(data);
                 $scope.page_created = true;
+            } else {
+                $scope.userMessageData = null
             }
         })
+    };
+
+    $scope.talkImagesClick = function (image) {
+        const viewer = new Viewer(document.getElementById(image), {
+            navbar: false,
+            title: false,
+            keyboard: false,
+            zIndex: 20000,
+            toolbar: {
+                zoomIn: 4,
+                zoomOut: 4,
+                reset: 4,
+                rotateLeft: 4,
+                rotateRight: 4,
+                flipHorizontal: 4,
+                flipVertical: 4,
+            },
+        });
+        viewer.show();
+    };
+
+    $scope.talkLike = function (id, item, index) {
+        dataService.callOpenApi('talk.like', {
+            id: id,
+        }, 'common').then(function (data) {
+            if (!data.success) {
+                $rootScope.cubeWarning('error', data.msg || '未知錯誤')
+            } else {
+                $rootScope.cubeWarning('success', '感谢鼓励！');
+                $scope.talkDataCount[2 * index] = parseInt($scope.talkDataCount[2 * index]) + 1
+            }
+        })
+    };
+
+    $scope.talkComment = function (id, item, index) {
+        $scope.currentTalk = item;
+        $scope.currentTalkIndex = index;
+        $timeout(function () {
+            $scope.talkCommentDialog();
+            $scope.talkCommentEditorCreate();
+            $scope.talkCommentGet(id, item);
+        }, 500)
+    };
+
+    $scope.talkCommentPageCreate = function (data, id, item) {
+        $("#PageCount" + 'talkComment').val(data.length);
+        $("#PageSize" + 'talkComment').val(10);
+        if (!$scope.talk_comment_page_created) {
+            $rootScope.loadpage(function (num) {
+                if (num !== $scope.talk_comment_current_page) {
+                    $scope.talkCommentGet(id, item, num);
+                }
+            }, 'talkComment')
+        }
+    };
+
+    $scope.talkCommentGet = function (id, item, page = 1) {
+        $rootScope.cubeLoading("加载中...");
+        dataService.callOpenApi("talk.comment.get", {
+            id: id,
+            page: page + ""
+        }, "common").then(function (data) {
+            $rootScope.swal.close();
+            if (!data.success) {
+                $rootScope.cubeWarning('error', data.msg || "未知错误")
+            } else {
+                item.commentData = data.content;
+                item.comment = data.length;
+                $rootScope.talkCommentData = data.content;
+                if ($rootScope.talkCommentData) {
+                    $timeout(function () {
+                        $scope.talk_comment_current_page = page;
+                        $scope.talkCommentPageCreate(data, id, item);
+                        $scope.talk_comment_page_created = true;
+                    }, 500)
+                }
+            }
+        })
+    };
+
+    $scope.talkCommentEditorCreate = function () {
+        $scope.talkCommentEditor = new E('#talk-comment-toolbar', "#talk-comment-text");
+        $scope.talkCommentEditor.config.menus = [
+            'emoticon'
+        ];
+        $scope.talkCommentEditor.config.showFullScreen = false;
+        $scope.talkCommentEditor.config.height = 33;
+        $scope.talkCommentEditor.config.showMenuTooltips = false;
+        $scope.talkCommentEditor.create();
+    };
+
+    $scope.talkCommentDialog = function () {
+        $rootScope.coco({
+            title: "评论",
+            el: "#talk-comment-block",
+            width: "600px",
+            height: "650px",
+            zIndexOfModal: 10002,
+            zIndexOfMask: 10001,
+            zIndexOfActiveModal: 10002,
+            destroy: false,
+        }).onClose(function (ok, cc, done) {
+            $scope.talkCommentEditor.destroy();
+            $scope.talkCommentEditor = null;
+            $rootScope.talkCommentData = null;
+            $scope.talk_comment_page_created = false;
+            done()
+        });
+    };
+
+    $scope.talkCommentDelete = function (id, item_id, item) {
+        item.comment = parseInt(item.comment) - 1
+        $rootScope.confirm('info', '删除评论', '是否删除该条评论？', '确定').then(function (result) {
+            if (result.isConfirmed) {
+                dataService.callOpenApi('delete.talk.Comment', {
+                    id: id,
+                    cubeid: $rootScope.userId,
+                    talkid: item_id,
+                    comment: JSON.stringify(item.comment)
+                }, 'private').then(function (data) {
+                    if (!data.success) {
+                        $rootScope.cubeWarning('error', data.msg || '未知錯誤')
+                    } else {
+                        $scope.talkCommentGet(item_id, item);
+                    }
+                })
+            }
+        })
+    };
+
+    $scope.profileCare = function () {
+        let defer = $q.defer();
+        dataService.callOpenApi('user.profile.care', {
+            cubeid: $rootScope.userId,
+        }, 'common').then(function (data) {
+            if (data.success && data["profileCare"]) {
+                data["profileCare"].forEach(function (item) {
+                    item.select = false;
+                });
+                $scope.profileCareData = data["profileCare"];
+                defer.resolve(data["profileCare"]);
+            } else {
+                defer.reject();
+            }
+        })
+        return defer.promise;
+    };
+
+    $scope.careSelect = function (index) {
+        $scope.currentCareId = $scope.profileCareData[index]['cube_id'];
+        $scope.profileCareData.forEach(function (item, i) {
+            $scope.profileCareData[index]['select'] = i === index;
+        });
+        if ($scope.currentMessageMenu['key'] === 'talk') {
+            $scope.careTalkDataGet($scope.currentCareId);
+        }else{
+            $scope.careBlogDataGet($scope.currentCareId);
+        }
+    };
+
+    $scope.careBlogDataGet = function (cube_id, page = 1) {
+        $rootScope.cubeLoading("加载中...");
+        dataService.callOpenApi("profile.blog.get", {
+            "page": page + "",
+            "cube_id": cube_id
+        }, "common").then(function (data) {
+            $rootScope.swal.close()
+            if (data.success && data.length) {
+                if (data.content) {
+                    data.content.forEach(function (item) {
+                        let time = item.date.split(" ")[0].split("-").join("")
+                        item.author = item.name
+                        if (item.cover) {
+                            let cover = ["http://47.119.151.14:3001/blog", item["cube_id"], time, item.cover].join("/")
+                            item.cover = cover
+                        }
+                    })
+                }
+                $scope.profileBlogData = data.content || null;
+                $scope.current_page = page;
+                $scope.pageCreateBlog(data);
+                $scope.page_created = true;
+            } else {
+                $scope.profileBlogData = null;
+            }
+        })
+    };
+
+    $scope.pageCreateBlog = function (data) {
+        $("#PageCountblog").val(data.length);
+        $("#PageSizeblog").val(10);
+        if (!$scope.page_created) {
+            $rootScope.loadpage(function (num, type) {
+                if (num !== $scope.current_page) {
+                    $scope.careBlogDataGet($scope.currentCareId, num);
+                }
+            }, "blog")
+        }
+    };
+
+    $scope.blogDetail = function (id){
+        $state.go("blog", {id: id});
+    };
+
+    $scope.careTalkDataGet = function (cube_id, page = 1) {
+        $rootScope.cubeLoading("加载中...");
+        dataService.callOpenApi("profile.talk.get", {
+            "page": page + "",
+            "cube_id": cube_id
+        }, "common").then(function (data) {
+            $rootScope.swal.close();
+            if (!data.success) {
+                $rootScope.cubeWarning('error', data.msg || "未知错误");
+            } else if (data.length !== 0) {
+                data.content.forEach(function (item) {
+                    item['user_image'] = item['user_image'] || null;
+                });
+                $scope.talkData = data.content;
+                $scope.talkDataCount = data.count;
+                $scope.talkDataMode = data.mode;
+                $scope.talkImagesSet(data.content);
+                $scope.current_page = page;
+                $scope.pageCreateTalk(data);
+                $scope.page_created = true;
+            } else {
+                $scope.talkData = null;
+            }
+        })
+    };
+
+    $scope.pageCreateTalk = function (data) {
+        $("#PageCounttalk").val(data.length);
+        $("#PageSizetalk").val(10);
+        if (!$scope.page_created) {
+            $rootScope.loadpage(function (num) {
+                if (num !== $scope.current_page) {
+                    $scope.careTalkDataGet($scope.currentCareId, num)
+                }
+            }, 'talk')
+        }
+    };
+
+    $scope.talkImagesSet = function (content) {
+        $scope.talkImagesBlock = {};
+        content.forEach(function (item) {
+            let time = item.date.split(" ")[0].split("-").join("")
+            if (item.images) {
+                item.images.split(":").forEach(function (image) {
+                    let link = ["http://47.119.151.14:3001/talk", item["cube_id"], time, image].join("/")
+                    if (!$scope.talkImagesBlock[item["id"]]) {
+                        $scope.talkImagesBlock[item["id"]] = [link]
+                    } else {
+                        $scope.talkImagesBlock[item["id"]].push(link)
+                    }
+                });
+            }
+        });
     };
 
     $scope.pageCreateMessage = function (data) {
@@ -49,7 +365,7 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         if (!$scope.page_created) {
             $rootScope.loadpage(function (num, type) {
                 if (num !== $scope.current_page) {
-                    $scope.profileTalkGet(num);
+                    $scope.userMessageGet(num);
                 }
             }, "message")
         }
@@ -63,10 +379,12 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     }, {
         key: "blog",
         name: "文章",
+        func: $scope.blogGet,
         select: false
     }, {
         key: "talk",
         name: "说说",
+        func: $scope.talkGet,
         select: false
     }]
 }])
