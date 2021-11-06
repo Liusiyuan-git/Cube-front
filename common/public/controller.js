@@ -113,4 +113,10 @@ app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', 'dat
         });
     };
 
+    $rootScope.PhoneMessage = {
+        "LimitExceeded.PhoneNumberOneHourLimit": "该手机号1小时内下发短信条数超过上限",
+        "LimitExceeded.PhoneNumberDailyLimit": "该手机号日下发短信条数超过设定的上限",
+        "LimitExceeded.PhoneNumberThirtySecondLimit": "该手机号30秒内下发短信条数超过设定的上限"
+    }
+
 }])

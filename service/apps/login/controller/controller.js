@@ -96,8 +96,15 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
             }
         }, 1000, 120);
         dataService.callOpenApi("verification.code", {
-            phone: $scope.loginPhone
-        }, "register")
+            phone: $scope.loginPhone,
+            mode: "login"
+        }, "user").then(function (data) {
+            if (data.success) {
+                $rootScope.cubeWarning("info", $rootScope.PhoneMessage[JSON.parse(data.content).Response.SendStatusSet[0].Code],10000)
+            } else {
+                $rootScope.cubeWarning("error", "未知错误")
+            }
+        })
     };
 
     $scope.Login = function () {
@@ -266,7 +273,14 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
                 }
                 dataService.callOpenApi("verification.code", {
                     phone: phone.value,
-                }, "user")
+                    mode: "password"
+                }, "user").then(function (data) {
+                    if (data.success) {
+                        $rootScope.cubeWarning("info", $rootScope.PhoneMessage[JSON.parse(data.content).Response.SendStatusSet[0].Code],10000)
+                    } else {
+                        $rootScope.cubeWarning("error", "未知错误")
+                    }
+                })
                 return false
             },
         })

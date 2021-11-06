@@ -298,14 +298,16 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     };
 
     $scope.pageCreate = function (data) {
-        $("#PageCount").val(data.length);
-        $("#PageSize").val(10);
-        if (!$scope.page_created) {
-            $rootScope.loadpage(function (num, type) {
-                if (num !== $scope.current_page) {
-                    $scope.commentGet(num);
-                }
-            })
+        if(data.length){
+            $("#PageCount").val(data.length);
+            $("#PageSize").val(10);
+            if (!$scope.page_created) {
+                $rootScope.loadpage(function (num, type) {
+                    if (num !== $scope.current_page) {
+                        $scope.commentGet(num);
+                    }
+                })
+            }
         }
     };
 

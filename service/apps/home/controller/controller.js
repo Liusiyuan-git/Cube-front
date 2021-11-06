@@ -25,7 +25,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
 
     $scope.goToUserProfile = function () {
         localStorage.setItem("profileId", $rootScope.userId);
-        window.open("http://127.0.0.1:3000/#!/main/community/profile?state=profile")
+        $state.go("profile", {state: 'profile'});
     };
 
     $scope.filterSelect = function (i) {
@@ -37,7 +37,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     };
 
     $scope.filterChildSelect = function (i) {
-        $scope.page_created  =false;
+        $scope.page_created = false;
         $scope.currentFilter.child.forEach(function (item) {
             item.select = item.key === i.key;
         })
@@ -156,7 +156,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     };
 
     $scope.blog = function (id) {
-        window.open("http://127.0.0.1:3000/#!/main/community/blog?id=" + id)
+        $state.go("blog", {id: id})
     };
 
     $scope.homeMenu = [{
