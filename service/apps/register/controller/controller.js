@@ -17,7 +17,14 @@ app.controller("registerCtrl", ['$rootScope', '$scope', '$interval', 'dataServic
         }, 1000, 120);
         dataService.callOpenApi("verification.code", {
             phone: $scope.params.phone,
-        }, "user")
+            mode: "register"
+        }, "user").then(function (data) {
+            if (data.success) {
+                $rootScope.cubeWarning("info", $rootScope.PhoneMessage[JSON.parse(data.content).Response.SendStatusSet[0].Code],10000)
+            } else {
+                $rootScope.cubeWarning("error", "未知错误")
+            }
+        })
     }
 
     $scope.initparams = function () {
@@ -110,7 +117,7 @@ app.controller("registerCtrl", ['$rootScope', '$scope', '$interval', 'dataServic
                     showCancelButton: false,
                     onBeforeOpen: () => {
                         $rootScope.swal.showLoading();
-                        dataService.callOpenApi("user.register", $scope.params,"register").then(function (data) {
+                        dataService.callOpenApi("user.register", $scope.params, "register").then(function (data) {
                             $rootScope.swal.close()
                             $scope.swal.fire({
                                 icon: data.success ? 'success' : 'error',

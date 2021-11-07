@@ -103,7 +103,6 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
 
     $scope.menuSelect = function (key) {
         $scope.page_created = false;
-        $scope.talkData = null;
         $scope.talkingMenu.forEach(function (item) {
             if (item.key === key) {
                 $scope.currentTalkingMenu = item

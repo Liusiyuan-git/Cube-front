@@ -13,10 +13,13 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             frame.className = "container in";
         }, 300);
         $scope.menuSelect("message");
-        $scope.userMessageClean()
+        $scope.userMessageClean();
     };
 
     $scope.blogGet = function () {
+        if (!$scope.loginStatusCheck()) {
+            return null
+        }
         $scope.profileCare().then(function (data) {
             if (data.length) {
                 $scope.careSelect(0);
@@ -27,6 +30,9 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.talkGet = function () {
+        if (!$scope.loginStatusCheck()) {
+            return null
+        }
         $scope.profileCare().then(function (data) {
             if (data.length) {
                 $scope.careSelect(0);
@@ -34,6 +40,42 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         }, function () {
 
         })
+    };
+
+    $scope.messageProfileTalkGet = function (careData) {
+        let idBox = [];
+        careData.forEach(function (item) {
+            idBox.push(item.cube_id)
+        });
+        let idString = idBox.join(";")
+        dataService.callOpenApi("message.profile.user.talk.get", {
+            id: $rootScope.userId,
+            idBox: idString
+        }, "private").then(function (data) {
+            if (data.success) {
+                $scope.userMessageTalk = data.content
+            } else {
+                $scope.userMessageTalk = null;
+            }
+        });
+    };
+
+    $scope.messageProfileBlogGet = function (careData) {
+        let idBox = [];
+        careData.forEach(function (item) {
+            idBox.push(item.cube_id)
+        });
+        let idString = idBox.join(";")
+        dataService.callOpenApi("message.profile.user.blog.get", {
+            id: $rootScope.userId,
+            idBox: idString
+        }, "private").then(function (data) {
+            if (data.success) {
+                $scope.userMessageBlog = data.content
+            } else {
+                $scope.userMessageBlog = null;
+            }
+        });
     };
 
     $scope.menuSelect = function (key) {
@@ -52,13 +94,13 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         $state.go("profile", {state: 'profile'});
     };
 
-    $scope.userMessageClean = function (){
+    $scope.userMessageClean = function () {
         if (!$scope.loginStatusCheck()) {
             return null
         }
         dataService.callOpenApi('user.message.clean', {
             id: $rootScope.userId,
-        }, 'private').then(function (){
+        }, 'private').then(function () {
             $scope.messageProfileGet()
         })
     };
@@ -69,8 +111,8 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         }
         dataService.callOpenApi("message.profile.get", {
             "cube_id": $rootScope.userId
-        }, "private").then(function (data){
-            if(data.success){
+        }, "private").then(function (data) {
+            if (data.success) {
                 $rootScope.messageCount = data['profile'][0];
                 $scope.messageBlogCount = data['profile'][1];
                 $scope.messageTalkCount = data['profile'][2];
@@ -234,7 +276,7 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         let defer = $q.defer();
         dataService.callOpenApi('user.profile.care', {
             cubeid: $rootScope.userId,
-        }, 'common').then(function (data) {
+        }, 'private').then(function (data) {
             if (data.success && data["profileCare"]) {
                 data["profileCare"].forEach(function (item) {
                     item.select = false;
@@ -254,9 +296,43 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             $scope.profileCareData[index]['select'] = i === index;
         });
         if ($scope.currentMessageMenu['key'] === 'talk') {
+            $scope.messageProfileUserTalkClean($scope.currentCareId);
             $scope.careTalkDataGet($scope.currentCareId);
-        }else{
+        } else {
+            $scope.messageProfileUserBlogClean($scope.currentCareId);
             $scope.careBlogDataGet($scope.currentCareId);
+        }
+    };
+
+    $scope.messageProfileUserTalkClean = function (id) {
+        dataService.callOpenApi("message.profile.user.talk.clean", {
+            id: $rootScope.userId,
+            deleteId: id
+        }, "private").then(function () {
+            $scope.messageProfileGet();
+            $scope.messageProfileTalkGet($scope.profileCareData);
+        })
+    };
+
+    $scope.messageProfileUserBlogClean = function (id) {
+        dataService.callOpenApi("message.profile.user.blog.clean", {
+            id: $rootScope.userId,
+            deleteId: id
+        }, "private").then(function () {
+            $scope.messageProfileGet();
+            $scope.messageProfileBlogGet($scope.profileCareData);
+        })
+    };
+
+    $scope.menuDirection = function (item) {
+        console.log(item)
+        if (item['talk'] === 1) {
+            $scope.menuSelect('talk');
+            return 0
+        }
+        if (item['blog'] === 1) {
+            $scope.menuSelect('blog');
+            return 0
         }
     };
 
@@ -300,7 +376,7 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         }
     };
 
-    $scope.blogDetail = function (id){
+    $scope.blogDetail = function (id) {
         $state.go("blog", {id: id});
     };
 
