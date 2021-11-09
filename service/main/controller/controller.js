@@ -9,6 +9,15 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
         if ($state.params.state) {
             $scope.select($state.params.state)
         }
+        $scope.searchData = "";
+    };
+
+    $scope.CubeSearch = function (content) {
+        if(content === ''){
+            $rootScope.cubeWarning("info","请输入搜索内容");
+            return null;
+        }
+        $state.go("search", {state: "search", search: content})
     };
 
     $scope.selectAndGo = function (state) {
@@ -22,7 +31,7 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
         $scope.menu_list.forEach(function (item) {
             item.select = item.state === state
         })
-    }
+    };
 
     $scope.userMenu = function (e) {
         let element = document.getElementById("user-menu")
@@ -67,7 +76,7 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
 
     $scope.profile = function () {
         localStorage.setItem("profileId", $rootScope.userId);
-        window.open("http://127.0.0.1:3000/#!/main/community/profile?state=profile")
+        $state.go("profile", {state: 'profile'});
     };
 
     $rootScope.$on('$stateChangeSuccess', function () {
@@ -103,9 +112,15 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
         id: 3,
         key: "message",
         name: "消息动态",
-        state: "about",
+        state: "message",
         select: false
-    },{
+    }, {
+        id: 4,
+        key: "search",
+        name: "站内搜索",
+        state: "search",
+        select: false
+    }, {
         id: 4,
         key: "about",
         name: "关于Cube",

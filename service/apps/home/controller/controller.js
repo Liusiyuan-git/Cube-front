@@ -115,7 +115,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
             "label": $scope.currentFilter.key,
             "label_type": $scope.currentFilterChild.key
         }, "common").then(function (data) {
-            $rootScope.swal.close()
+            $rootScope.swal.close();
             if (data.success && data.length) {
                 if (data.content) {
                     data.content.forEach(function (item) {
