@@ -5,8 +5,9 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
     function ($rootScope, $scope, $state, $timeout, dataService) {
         $scope.initCommunity = function () {
             $rootScope.cubelocation = "community";
+            $scope.childHtml = false;
             $rootScope.messageCount = 0;
-            $scope.loginStatusCheck();
+            $scope.loginStatusConfirm();
             $scope.messageProfileGet();
         };
 
@@ -16,8 +17,8 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
             }
             dataService.callOpenApi("message.profile.get", {
                 "cube_id": $rootScope.userId
-            }, "private").then(function (data){
-                if(data.success){
+            }, "private").then(function (data) {
+                if (data.success) {
                     $rootScope.messageCount = data['profile'][0];
                     $scope.messageTalkCount = data['profile'][2];
                 }
@@ -25,24 +26,28 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
             });
         };
 
+        $scope.loginStatusConfirm = function () {
+            $rootScope.loginStatusCheck().then(function (data) {
+                if (data.success) {
+                    $rootScope.userName = localStorage.getItem("userName");
+                    $rootScope.userId = localStorage.getItem("CubeId");
+                    $rootScope.userImage = localStorage.getItem("userImage") ? "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + localStorage.getItem("userImage") : null;
+                    $rootScope.login = true;
+                } else {
+                    localStorage.removeItem('setLoginStartTime');
+                    localStorage.removeItem('CubeId');
+                    localStorage.removeItem('userImage');
+                    localStorage.removeItem('userName');
+                    $rootScope.userId = "";
+                    $rootScope.userImage = "";
+                    $rootScope.login = false;
+                }
+                $scope.childHtml = true;
+            });
+        }
+
         $scope.loginStatusCheck = function () {
-            let starttime = parseInt(localStorage.getItem("setLoginStartTime"));
-            let currenttime = (Date.parse(new Date())) / 1000;
-            let second = Math.floor(currenttime - starttime);
-            if (second <= 86400) {
-                $rootScope.userId = localStorage.getItem("CubeId");
-                $rootScope.userImage = localStorage.getItem("userImage") ? "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + localStorage.getItem("userImage") : null;
-                $rootScope.login = true;
-                return true
-            } else {
-                localStorage.removeItem('setLoginStartTime');
-                localStorage.removeItem('CubeId');
-                localStorage.removeItem('userImage');
-                $rootScope.userId = "";
-                $rootScope.userImage = "";
-                $rootScope.login = false;
-                return false
-            }
+            return $rootScope.login
         };
 
         $scope.rabbitMqInit = function () {

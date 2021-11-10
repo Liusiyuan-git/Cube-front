@@ -7,8 +7,8 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
             let frame = document.getElementById("container");
             frame.className = "container in";
         }, 300);
-        $scope.initParams();
-        $scope.contentDataGet();
+        $scope.initState();
+        $scope.contentDataGet($scope.current_page);
         $scope.userProfileGet();
         $scope.scroll();
         $timeout(function () {
@@ -16,37 +16,62 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         }, 500);
     };
 
-    $scope.initParams = function () {
-        $scope.currentMenu = $scope.homeMenu[0].key;
-        $scope.currentFilter = $scope.forumBlock[0];
-        $scope.currentFilterChild = $scope.forumBlock[0].child[0];
-
+    $scope.initState = function () {
+        let page = parseInt($state.params.page)
+        let menu = parseInt($state.params.menu)
+        let filter = parseInt($state.params.filter)
+        let filterChild = parseInt($state.params.child)
+        $scope.current_page = page ? page : 1
+        if (!$scope.homeMenu[menu]) {
+            $scope.initParams(0, 0, 0);
+            $state.go("home", {page: 1, menu: 0, filter: 0, child: 0}, {notify: false, reload: false})
+            return null;
+        }
+        if (!$scope.forumBlock[filter]) {
+            $scope.initParams(0, 0, 0);
+            $state.go("home", {page: 1, menu: 0, filter: 0, child: 0}, {notify: false, reload: false})
+            return null;
+        }
+        if (!$scope.forumBlock[filter].child[filterChild]) {
+            $scope.initParams(0, 0, 0);
+            $state.go("home", {page: 1, menu: 0, filter: 0, child: 0}, {notify: false, reload: false})
+            return null;
+        }
+        $scope.initParams(menu, filter, filterChild);
     };
 
-    $scope.goToUserProfile = function () {
+    $scope.initParams = function (menu, filter, filterChild) {
+        $scope.currentMenu = $scope.homeMenu[menu].key;
+        $scope.currentFilter = $scope.forumBlock[filter];
+        $scope.currentFilterChild = $scope.forumBlock[filter].child[filterChild];
+    };
+
+    $scope.goToUserProfile = function (index) {
         localStorage.setItem("profileId", $rootScope.userId);
-        $state.go("profile", {state: 'profile'});
+        $state.go("profile", {state: 'profile', "menu": index});
     };
 
-    $scope.filterSelect = function (i) {
-        $scope.forumBlock.forEach(function (item) {
-            item.select = i.key === item.key;
-        })
+    $scope.filterSelect = function (i, index) {
         $scope.currentFilter = i;
-        $scope.filterChildSelect($scope.currentFilter.child[0]);
+        $state.go("home", {filter: index}, {notify: false, reload: false})
+        $timeout(function () {
+            $scope.filterChildSelect($scope.currentFilter.child[0], 0);
+        }, 50)
     };
 
-    $scope.filterChildSelect = function (i) {
+    $scope.filterChildSelect = function (i, index) {
         $scope.page_created = false;
-        $scope.currentFilter.child.forEach(function (item) {
-            item.select = item.key === i.key;
-        })
         $scope.currentFilterChild = i;
-        $scope.contentDataGet($scope.currentMenu)
+        $scope.currentMenu = $scope.homeMenu[0].key;
+        $state.go("home", {page: 1, menu: 0, child: index}, {notify: false, reload: false})
+        $scope.contentDataGet()
     };
 
     $scope.rocket = function () {
         document.documentElement.scrollIntoView({block: 'start', behavior: 'smooth'})
+    };
+    $scope.rocketTop = function () {
+        document.documentElement.scrollIntoView({block: 'start'})
     };
 
     $scope.scroll = function () {
@@ -61,14 +86,11 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         };
     };
 
-
-    $scope.menuSelect = function (key) {
+    $scope.menuSelect = function (key, index) {
         $scope.page_created = false;
-        $scope.homeMenu.forEach(function (item) {
-            item.select = item.key === key
-        })
         $scope.currentMenu = key;
-        $scope.contentDataGet(key)
+        $state.go("home", {page: 1, menu: index}, {notify: false, reload: false})
+        $scope.contentDataGet()
     };
 
     $scope.collectionGet = function () {
@@ -92,6 +114,8 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
                 $rootScope.userImage = data.profile[0] ? "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data.profile[0] : null
                 $scope.userName = data.profile[1];
                 $scope.userIntroduce = data.profile[2];
+                $scope.userCare = data.profile[6];
+                $scope.userCaring = data.profile[7]
             }
         })
     };
@@ -107,10 +131,10 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         }
     }
 
-    $scope.contentDataGet = function (mode = "new", page = 1) {
+    $scope.contentDataGet = function (page = 1) {
         $rootScope.cubeLoading("加载中...");
         dataService.callOpenApi("blog.get", {
-            "mode": mode,
+            "mode": $scope.currentMenu,
             "page": page + "",
             "label": $scope.currentFilter.key,
             "label_type": $scope.currentFilterChild.key
@@ -128,7 +152,6 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
                     })
                 }
                 $scope.blogProfile = data.profile;
-                $scope.rocket();
                 $scope.content = data.content;
                 $scope.current_page = page;
                 $scope.pageCreate(data);
@@ -145,9 +168,11 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         if (!$scope.page_created) {
             $rootScope.loadpage(function (num, type) {
                 if (num !== $scope.current_page) {
-                    $scope.contentDataGet($scope.currentMenu, num)
+                    $scope.rocketTop();
+                    $scope.contentDataGet(num);
+                    $state.go("home", {page: num}, {notify: false, reload: false})
                 }
-            })
+            }, "", $scope.current_page > data.length ? 1 : $scope.current_page)
         }
     };
 
@@ -195,7 +220,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
             "select": false
         }, {
             "key": "javaScript",
-            "name": "JavaScript++",
+            "name": "JavaScript",
             "select": false
         }, {
             "key": "c++",
@@ -251,7 +276,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
             "select": false
         }, {
             "key": "javaScript",
-            "name": "JavaScript++",
+            "name": "JavaScript",
             "select": false
         }, {
             "key": "c++",

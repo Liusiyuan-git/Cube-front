@@ -5,6 +5,7 @@ import "../style/style.scss"
 
 app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService', '$q', function ($rootScope, $scope, $state, $timeout, dataService, $q) {
     $scope.init = function () {
+        $scope.rocketTop();
         $timeout(function () {
             let frame = document.getElementById("container");
             frame.className = "container in";
@@ -103,9 +104,10 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
 
     $scope.userProfileGet = function (cube_id) {
         dataService.callOpenApi("user.profile.get", {cubeid: cube_id}, "common").then(function (data) {
-            if (data.success) {
+            if (data.success && data.profile[0] !== "") {
                 $scope.userImage = "http://47.119.151.14:3001/user/image/" + cube_id + "/" + data.profile[0];
-                console.log($scope.userImage)
+            }else{
+                $scope.userImage = null;
             }
         })
     };
@@ -355,5 +357,9 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
 
     $scope.rocket = function () {
         document.documentElement.scrollIntoView({block: 'start', behavior: 'smooth'});
+    };
+
+    $scope.rocketTop = function () {
+        document.documentElement.scrollIntoView({block: 'start'});
     };
 }])

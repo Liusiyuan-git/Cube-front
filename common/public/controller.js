@@ -15,7 +15,7 @@ import coco from 'coco-modal'
 app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', 'dataService', function ($rootScope, $scope, $state, $q, dataService) {
     $scope.init = function () {
         $scope.initParams();
-        $state.go("login")
+        $state.go("home")
     };
 
     $scope.initParams = function () {
@@ -95,7 +95,7 @@ app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', 'dat
         })
     };
 
-    $rootScope.loadpage = function (f, index = "") {
+    $rootScope.loadpage = function (f, index = "", currentPage = 1) {
         let myPageCount = parseInt($("#PageCount" + index).val());
         let myPageSize = parseInt($("#PageSize" + index).val());
         let countindex = myPageCount % myPageSize > 0 ? (myPageCount / myPageSize) + 1 : (myPageCount / myPageSize);
@@ -103,7 +103,7 @@ app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', 'dat
         $.jqPaginator('#pagination' + index, {
             totalPages: parseInt($("#countindex" + index).val()),
             visiblePages: parseInt($("#visiblePages" + index).val()),
-            currentPage: 1,
+            currentPage: currentPage,
             first: '<li class="first"><a href="javascript:;">首页</a></li>',
             prev: '<li class="prev"><a href="javascript:;"><i class="arrow arrow2"></i>上一页</a></li>',
             next: '<li class="next"><a href="javascript:;">下一页<i class="arrow arrow3"></i></a></li>',
