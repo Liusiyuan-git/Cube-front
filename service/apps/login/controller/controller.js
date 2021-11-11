@@ -22,24 +22,25 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
     };
 
     $scope.loginStatusCheck = function () {
-        let starttime = parseInt(localStorage.getItem("setLoginStartTime"));
-        let currenttime = (Date.parse(new Date())) / 1000;
-        let second = Math.floor(currenttime - starttime);
-        if (second <= 86400) {
-            $rootScope.userId = localStorage.getItem("CubeId");
-            $rootScope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + localStorage.getItem("userImage");
-            $rootScope.login = true;
-            $rootScope.cubeWarning('success', '登录成功', 3000).then(function () {
-                $state.go("home", {state: 'home'});
-            })
-        } else {
-            localStorage.removeItem('setLoginStartTime');
-            localStorage.removeItem('CubeId');
-            localStorage.removeItem('userImage');
-            $rootScope.userId = "";
-            $rootScope.userImage = "";
-            $rootScope.login = false;
-        }
+        $rootScope.loginStatusCheck().then(function (data) {
+            if (data.success) {
+                $rootScope.userName = localStorage.getItem("userName");
+                $rootScope.userId = localStorage.getItem("CubeId");
+                $rootScope.userImage = localStorage.getItem("userImage") ? "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + localStorage.getItem("userImage") : null;
+                $rootScope.login = true;
+                $rootScope.cubeWarning('success', '登录成功', 3000).then(function () {
+                    $state.go("home", {state: 'home'});
+                })
+            } else {
+                localStorage.removeItem('setLoginStartTime');
+                localStorage.removeItem('userName');
+                localStorage.removeItem('CubeId');
+                localStorage.removeItem('userImage');
+                $rootScope.userId = "";
+                $rootScope.userImage = "";
+                $rootScope.login = false;
+            }
+        });
     };
 
     $scope.change = function (index) {
@@ -100,7 +101,7 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
             mode: "login"
         }, "user").then(function (data) {
             if (data.success) {
-                $rootScope.cubeWarning("info", $rootScope.PhoneMessage[JSON.parse(data.content).Response.SendStatusSet[0].Code],10000)
+                $rootScope.cubeWarning("info", $rootScope.PhoneMessage[JSON.parse(data.content).Response.SendStatusSet[0].Code], 10000)
             } else {
                 $rootScope.cubeWarning("error", "未知错误")
             }
@@ -144,6 +145,7 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
                         $rootScope.cubeWarning('error', data.msg || "未知错误")
                     } else {
                         $rootScope.userId = data['cubeId'];
+                        $rootScope.userName = data['userName'];
                         $rootScope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data["image"];
                         $rootScope.login = true;
                         $scope.setLoginStartTime(data)
@@ -276,7 +278,7 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
                     mode: "password"
                 }, "user").then(function (data) {
                     if (data.success) {
-                        $rootScope.cubeWarning("info", $rootScope.PhoneMessage[JSON.parse(data.content).Response.SendStatusSet[0].Code],10000)
+                        $rootScope.cubeWarning("info", $rootScope.PhoneMessage[JSON.parse(data.content).Response.SendStatusSet[0].Code], 10000)
                     } else {
                         $rootScope.cubeWarning("error", "未知错误")
                     }

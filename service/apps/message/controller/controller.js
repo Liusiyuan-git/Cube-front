@@ -7,7 +7,6 @@ import Viewer from 'viewerjs';
 
 app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService', "$q", function ($rootScope, $scope, $state, $timeout, dataService, $q) {
     $scope.init = function () {
-        $scope.initParams();
         $timeout(function () {
             let frame = document.getElementById("container");
             frame.className = "container in";

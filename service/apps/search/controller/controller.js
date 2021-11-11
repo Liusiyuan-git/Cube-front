@@ -65,6 +65,7 @@ app.controller("searchCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dat
         } else {
             $scope.searchBlog();
         }
+        $state.go("search", {state: "search", search: content}, {notify: false, reload: false})
     };
 
     $scope.initParams = function () {
@@ -132,7 +133,7 @@ app.controller("searchCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dat
             $rootScope.swal.close();
             $scope.userData = data.content;
             $scope.current_page = page;
-            // $scope.pageUserCreate(data);
+            $scope.pageUserCreate(data);
             $scope.page_created = true;
         });
     };
@@ -209,6 +210,10 @@ app.controller("searchCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dat
         }
     };
 
+    $scope.blog = function (id) {
+        $state.go("blog", {id: id})
+    };
+
     $scope.pageUserCreate = function (data) {
         if (data.length) {
             $("#PageCountuser").val(data.length);
@@ -232,21 +237,6 @@ app.controller("searchCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dat
             }
             item.select = item.key === key;
         })
-    };
-
-    $scope.searchTalk = function (page = 1) {
-        $rootScope.cubeLoading("加载中...");
-        dataService.callOpenApi("talk.search", {
-            keyWord: $scope.searchContent["text"],
-            page: page + ""
-        }, "common").then(function (data) {
-            $rootScope.swal.close();
-            $scope.talkImagesSet(data.content);
-            $scope.talkData = data.content;
-            $scope.current_page = page;
-            $scope.pageTalkCreate(data);
-            $scope.page_created = true;
-        });
     };
 
     $scope.searchMenu = [{

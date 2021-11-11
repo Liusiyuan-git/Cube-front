@@ -6,6 +6,7 @@ import 'cropperjs/dist/cropper.css';
 import Cropper from 'cropperjs';
 import E from "wangeditor";
 
+
 app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService', function ($rootScope, $scope, $state, $timeout, dataService) {
     $scope.init = function () {
         $timeout(function () {
@@ -14,7 +15,6 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         }, 300);
         $scope.initParams();
         $scope.userProfileGet();
-        $scope.profileBlogGet();
         $scope.rocketPosition();
         $scope.userCareConfirm();
     };
@@ -57,7 +57,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             title: "关注",
             el: "#care",
             okText: "确认",
-            buttonColor: '#03a9f4',
+            buttonColor: '#0077ff',
         }).onClose(function (ok, cc, done) {
             if (ok) {
                 $scope.careCancel();
@@ -93,7 +93,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             title: "设置",
             el: "#name-edit-dialog",
             okText: "提交",
-            buttonColor: '#03a9f4',
+            buttonColor: '#0077ff',
         }).onClose(function (ok, cc, done) {
             if (ok) {
                 let s = introduce.value.trim();
@@ -138,7 +138,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             title: "设置",
             el: "#introduce-edit-dialog",
             okText: "提交",
-            buttonColor: '#03a9f4',
+            buttonColor: '#0077ff',
         }).onClose(function (ok, cc, done) {
             if (ok) {
                 let s = introduce.value.trim();
@@ -164,26 +164,33 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         $timeout(function () {
             $scope.talkCommentDialog();
             $scope.talkCommentEditorCreate();
-            $scope.talkCommentGet(id, item, index);
+            $scope.talkCommentGet(id, item);
         }, 500)
     };
 
 
     $scope.talkCommentDialog = function () {
-        $rootScope.coco({
+        $scope.commentDialog = new($rootScope.coco({
             title: "评论",
-            el: "#talk-comment-block",
+            el: "#talk-comment-block-profile-" + $scope.scopeId,
             width: "600px",
             height: "650px",
             destroy: false,
-        }).onClose(function (ok, cc, done) {
+        })).onClose(function (ok, cc, done) {
             $scope.talkCommentEditor.destroy();
             $scope.talkCommentEditor = null;
             $rootScope.talkCommentData = null;
             $scope.talk_comment_page_created = false;
             done()
-        });
+        })
     };
+
+    $scope.$on('$stateChangeStart', function (event, toState, toParams) {
+        $scope.commentDialog.onClose(function () {
+        })
+        $scope.commentDialog.destroyModal();
+        $scope.commentDialog.close()
+    });
 
     $scope.talkCommentGet = function (id, item, page = 1) {
         $rootScope.cubeLoading("加载中...")
@@ -203,6 +210,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                         $scope.talk_comment_current_page = page;
                         $scope.talkCommentPageCreate(data, id, item);
                         $scope.talk_comment_page_created = true;
+                        $rootScope.$apply();
                     }, 500)
                 }
             }
@@ -245,9 +253,14 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             $rootScope.cubeWarning('info', '请先登录');
             return null
         }
-        item.comment = parseInt(item.comment) - 1
-        $rootScope.confirm('info', '删除评论', '是否删除该条评论？', '确定').then(function (result) {
-            if (result.isConfirmed) {
+        item.comment = parseInt(item.comment) - 1;
+        $rootScope.coco({
+            title: "评论删除",
+            el: "#delete",
+            okText: "确认",
+            buttonColor: '#0077ff',
+        }).onClose(function (ok, cc, done) {
+            if (ok) {
                 dataService.callOpenApi('delete.talk.Comment', {
                     id: id + "",
                     cubeid: $rootScope.userId,
@@ -260,9 +273,12 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                     } else {
                         $scope.talkCommentGet(item_id, item);
                     }
+                    done()
                 })
+            } else {
+                done()
             }
-        })
+        });
     };
 
     $scope.talkCommentPageCreate = function (data, id, item) {
@@ -318,10 +334,18 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.initParams = function () {
+        $scope.scopeId = $scope.$id;
         $scope.inputimage = "";
         $scope.userImage = "";
-        $scope.currentOption = $scope.options[0];
         $scope.profileId = localStorage.getItem("profileId");
+        let menu = parseInt($state.params.menu)
+        if (!$scope.options[menu]) {
+            $scope.currentOption = $scope.options[0];
+            $state.go("profile", {menu: 0}, {notify: false, reload: false})
+        } else {
+            $scope.currentOption = $scope.options[menu];
+        }
+        $scope.currentOption.func();
     };
 
     $scope.loadingImg = function (eve) {
@@ -369,7 +393,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                     el: "#user-image-dialog",
                     okText: "提交",
                     width: "600px",
-                    buttonColor: '#03a9f4',
+                    buttonColor: '#0077ff',
                 }).onClose(function (ok, cc, done) {
                     if (ok) {
                         $scope.cutBtnConfirm(done)
@@ -662,23 +686,20 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
 
-    $scope.optionsSelect = function (each) {
-        $scope.options.forEach(function (item) {
-            item.select = item.key === each.key;
-        })
+    $scope.optionsSelect = function (each, index) {
         $scope.currentOption = each;
         $scope.page_created = false;
-        each.func()
+        each.func();
+        $state.go("profile", {menu: index}, {notify: false, reload: false})
     };
 
-
     $scope.blog = function (id) {
-        window.open("http://127.0.0.1:3000/#!/main/community/blog?id=" + id);
+        $state.go("blog", {id: id})
     };
 
     $scope.goToUserProfile = function (cube_id) {
         localStorage.setItem("profileId", cube_id);
-        $state.go("profile", {state: 'profile'});
+        $state.go("profile", {state: 'profile'}, {reload: true});
     };
 
     $scope.profileCare = function () {
