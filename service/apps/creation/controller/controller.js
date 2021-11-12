@@ -44,7 +44,6 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             e.stopPropagation();
         };
 
-
         $scope.editorDataSet = function () {
             $rootScope.cubeLoading("加载中...")
             dataService.callOpenApi("get.draft", {cubeid: $rootScope.userId}, "private").then(function (data) {
@@ -329,6 +328,13 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                             })
                         } else {
                             $scope.stateJumpConfirm = true;
+                            document.onclick = function (e) {
+                                let element = document.getElementById("user-menu")
+                                if (element) {
+                                    element.style.display = "none";
+                                }
+                                e.stopPropagation();
+                            };
                             $state.go(toState, toParams);
                         }
                     })

@@ -7,12 +7,17 @@ import Viewer from 'viewerjs';
 
 app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService', "$q", function ($rootScope, $scope, $state, $timeout, dataService, $q) {
     $scope.init = function () {
+        $scope.initParams();
         $timeout(function () {
             let frame = document.getElementById("container");
             frame.className = "container in";
         }, 300);
         $scope.menuSelect("message");
         $scope.userMessageClean();
+    };
+
+    $scope.initParams = function () {
+        $scope.scopeId = $scope.$id;
     };
 
     $scope.blogGet = function () {
@@ -233,14 +238,11 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.talkCommentDialog = function () {
-        $rootScope.coco({
+        $scope.commentDialog = $rootScope.coco({
             title: "评论",
-            el: "#talk-comment-block",
+            el: "#talk-comment-block-message" + $scope.scopeId,
             width: "600px",
             height: "650px",
-            zIndexOfModal: 10002,
-            zIndexOfMask: 10001,
-            zIndexOfActiveModal: 10002,
             destroy: false,
         }).onClose(function (ok, cc, done) {
             $scope.talkCommentEditor.destroy();
@@ -251,10 +253,59 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         });
     };
 
+    $scope.talkCommentSend = function () {
+        let item = $scope.currentTalk;
+        let id = $scope.currentTalk.id;
+        let index = $scope.currentTalkIndex;
+        item.comment = parseInt(item.comment) + 1
+        let text = $scope.talkCommentEditor.txt.text()
+        if (text === '') {
+            $rootScope.cubeWarning('warning', '内容不能为空')
+            return null
+        }
+        if (!$scope.loginStatusCheck()) {
+            $rootScope.cubeWarning('error', '请先登录')
+            return null
+        }
+        dataService.callOpenApi('send.talk.comment', {
+            id: id,
+            cubeid: $rootScope.userId,
+            text: text,
+        }, 'private').then(function (data) {
+            if (data.success) {
+                $rootScope.cubeWarning('success', '发布成功')
+                $scope.talkCommentEditor.txt.clear();
+                $scope.talkDataCount[2 * index + 1] = parseInt($scope.talkDataCount[2 * index + 1]) + 1;
+                $scope.talk_comment_page_created = false;
+                $scope.talkCommentGet(id, item);
+            } else {
+                $rootScope.cubeWarning('error', data.msg || '发布出错')
+            }
+        })
+    };
+
+    $scope.$on('$stateChangeStart', function (event, toState, toParams) {
+        if ($scope.commentDialog) {
+            $scope.commentDialog.onClose(function () {
+            })
+            $scope.commentDialog.destroyModal();
+            $scope.commentDialog.close()
+        }
+    });
+
     $scope.talkCommentDelete = function (id, item_id, item) {
-        item.comment = parseInt(item.comment) - 1
-        $rootScope.confirm('info', '删除评论', '是否删除该条评论？', '确定').then(function (result) {
-            if (result.isConfirmed) {
+        if (!$scope.loginStatusCheck()) {
+            $rootScope.cubeWarning('info', '请先登录');
+            return null
+        }
+        item.comment = parseInt(item.comment) - 1;
+        $rootScope.coco({
+            title: "评论删除",
+            el: "#delete",
+            okText: "确认",
+            buttonColor: '#0077ff',
+        }).onClose(function (ok, cc, done) {
+            if (ok) {
                 dataService.callOpenApi('delete.talk.Comment', {
                     id: id,
                     cubeid: $rootScope.userId,
@@ -266,9 +317,12 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                     } else {
                         $scope.talkCommentGet(item_id, item);
                     }
+                    done()
                 })
+            } else {
+                done()
             }
-        })
+        });
     };
 
     $scope.profileCare = function () {
@@ -369,6 +423,7 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         if (!$scope.page_created) {
             $rootScope.loadpage(function (num, type) {
                 if (num !== $scope.current_page) {
+                    $scope.rocketTop();
                     $scope.careBlogDataGet($scope.currentCareId, num);
                 }
             }, "blog")
@@ -411,6 +466,7 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         if (!$scope.page_created) {
             $rootScope.loadpage(function (num) {
                 if (num !== $scope.current_page) {
+                    $scope.rocketTop();
                     $scope.careTalkDataGet($scope.currentCareId, num)
                 }
             }, 'talk')
@@ -440,10 +496,15 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         if (!$scope.page_created) {
             $rootScope.loadpage(function (num, type) {
                 if (num !== $scope.current_page) {
+                    $scope.rocketTop();
                     $scope.userMessageGet(num);
                 }
             }, "message")
         }
+    };
+
+    $scope.rocketTop = function () {
+        document.documentElement.scrollIntoView({block: 'start'})
     };
 
     $scope.messageMenu = [{

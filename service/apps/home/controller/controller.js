@@ -70,6 +70,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     $scope.rocket = function () {
         document.documentElement.scrollIntoView({block: 'start', behavior: 'smooth'})
     };
+
     $scope.rocketTop = function () {
         document.documentElement.scrollIntoView({block: 'start'})
     };
