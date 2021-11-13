@@ -21,7 +21,7 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
 
     $scope.editorInit = function () {
         $scope.editor = new E('#blog-toolbar', '#blog-text');
-        $scope.editor.config.height = 1200;
+        // $scope.editor.config.height = 1200;
         $scope.editor.config.uploadImgMaxSize = 2 * 1024 * 1024;
         $scope.editor.config.uploadImgShowBase64 = true;
         $scope.editor.config.showLinkImg = false;
@@ -88,6 +88,7 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
                     let comment = parseInt(data.content[0]["comment"]);
                     let cover = ["http://47.119.151.14:3001/blog", data.content[0]["cube_id"], date, data.content[0]["cover"]].join("/");
                     $scope.imageSet(content, images, blog["cube_id"], date).then(function () {
+                        console.log(content)
                         $scope.editor.txt.setJSON(content);
                     })
                     $scope.content = data.content[0];
@@ -170,6 +171,7 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     };
 
     $scope.imageSet = function (content, images, cubeid, date) {
+        console.log(1111)
         let defer = $q.defer();
         let length = content.length - 1;
         if (images[0] !== "") {

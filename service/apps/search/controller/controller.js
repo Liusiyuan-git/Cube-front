@@ -189,6 +189,7 @@ app.controller("searchCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dat
             if (!$scope.page_created) {
                 $rootScope.loadpage(function (num, type) {
                     if (num !== $scope.current_page) {
+                        $scope.rocketTop();
                         $scope.searchBlog(num);
                     }
                 }, "blog")
@@ -203,6 +204,7 @@ app.controller("searchCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dat
             if (!$scope.page_created) {
                 $rootScope.loadpage(function (num, type) {
                     if (num !== $scope.current_page) {
+                        $scope.rocketTop();
                         $scope.searchTalk(num);
                     }
                 }, "talk")
@@ -221,6 +223,7 @@ app.controller("searchCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dat
             if (!$scope.page_created) {
                 $rootScope.loadpage(function (num, type) {
                     if (num !== $scope.current_page) {
+                        $scope.rocketTop();
                         $scope.searchUser(num);
                     }
                 }, "user")
@@ -237,6 +240,10 @@ app.controller("searchCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dat
             }
             item.select = item.key === key;
         })
+    };
+
+    $scope.rocketTop = function () {
+        document.documentElement.scrollIntoView({block: 'start'})
     };
 
     $scope.searchMenu = [{

@@ -7,7 +7,7 @@ import Cropper from 'cropperjs';
 import E from "wangeditor";
 
 
-app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService', function ($rootScope, $scope, $state, $timeout, dataService) {
+app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q", 'dataService', function ($rootScope, $scope, $state, $timeout, $q, dataService) {
     $scope.init = function () {
         $timeout(function () {
             let frame = document.getElementById("container");
@@ -170,7 +170,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
 
 
     $scope.talkCommentDialog = function () {
-        $scope.commentDialog = new($rootScope.coco({
+        $scope.commentDialog = new ($rootScope.coco({
             title: "评论",
             el: "#talk-comment-block-profile-" + $scope.scopeId,
             width: "600px",
@@ -186,10 +186,12 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.$on('$stateChangeStart', function (event, toState, toParams) {
-        $scope.commentDialog.onClose(function () {
-        })
-        $scope.commentDialog.destroyModal();
-        $scope.commentDialog.close()
+        if ($scope.commentDialog) {
+            $scope.commentDialog.onClose(function () {
+            })
+            $scope.commentDialog.destroyModal();
+            $scope.commentDialog.close()
+        }
     });
 
     $scope.talkCommentGet = function (id, item, page = 1) {
@@ -227,7 +229,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             $rootScope.cubeWarning('warning', '内容不能为空');
             return null
         }
-        if (!$rootScope.userId) {
+        if (!$scope.loginStatusCheck()) {
             $rootScope.cubeWarning('error', '请先登录');
             return null
         }
@@ -333,6 +335,10 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         document.documentElement.scrollIntoView({block: 'start', behavior: 'smooth'})
     };
 
+    $scope.rocketTop = function () {
+        document.documentElement.scrollIntoView({block: 'start'})
+    };
+
     $scope.initParams = function () {
         $scope.scopeId = $scope.$id;
         $scope.inputimage = "";
@@ -346,6 +352,75 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             $scope.currentOption = $scope.options[menu];
         }
         $scope.currentOption.func();
+    };
+
+    $scope.blogDelete = function (e, item, index) {
+        e.stopPropagation();
+        $rootScope.coco({
+            title: "删除",
+            el: "#blog-delete",
+            okText: "确认",
+            buttonColor: '#0077ff',
+        }).onClose(function (ok, cc, done) {
+            if (ok) {
+                $rootScope.cubeLoading("加载中...");
+                dataService.callOpenApi("blog.delete", {
+                    "label": item["label"],
+                    "label_type": item["label_type"],
+                    "index": index + "",
+                    "cover": item["cover"],
+                    "data": item["date"],
+                    "image": item["image"],
+                    "blog_id": item["id"],
+                    "cube_id": item["cube_id"]
+                }, "private").then(function (data) {
+                    $rootScope.swal.close();
+                    if (data.success) {
+                        $scope.page_created = false;
+                        $scope.profileBlogGet().then(function () {
+                            $scope.userProfileGet();
+                        })
+                    } else {
+                        $rootScope.cubeWarning("error", data.message || "未知错误")
+                    }
+                })
+                done()
+            } else {
+                done()
+            }
+        });
+    };
+
+    $scope.collectDelete = function (e, item, index) {
+        e.stopPropagation();
+        $rootScope.coco({
+            title: "删除",
+            el: "#collect-delete",
+            okText: "确认",
+            buttonColor: '#0077ff',
+        }).onClose(function (ok, cc, done) {
+            if (ok) {
+                $rootScope.cubeLoading("加载中...");
+                dataService.callOpenApi("collect.delete", {
+                    "index": index + "",
+                    "blog_id": item["id"],
+                    "cube_id": item["cube_id"]
+                }, "private").then(function (data) {
+                    $rootScope.swal.close();
+                    if (data.success) {
+                        $scope.page_created = false;
+                        $scope.profileCollectGet().then(function () {
+                            $scope.userProfileGet();
+                        })
+                    } else {
+                        $rootScope.cubeWarning("error", data.message || "未知错误")
+                    }
+                })
+                done()
+            } else {
+                done()
+            }
+        });
     };
 
     $scope.loadingImg = function (eve) {
@@ -475,8 +550,8 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.sendUserImage = function (image, done) {
-        if (!$rootScope.userId) {
-            $rootScope.cubeWarning('error', '请先登录')
+        if (!$scope.loginStatusCheck()) {
+            $rootScope.cubeWarning('info', '请先登录')
             return null
         }
         $rootScope.cubeLoading("上传中...");
@@ -538,6 +613,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.profileBlogGet = function (page = 1) {
+        let defer = $q.defer();
         $rootScope.cubeLoading("加载中...");
         dataService.callOpenApi("profile.blog.get", {
             "page": page + "",
@@ -555,7 +631,6 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                         }
                     })
                 }
-                $scope.rocket();
                 $scope.profileBlogData = data.content || null;
                 $scope.current_page = page;
                 $scope.pageCreateBlog(data);
@@ -563,7 +638,9 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             } else {
                 $scope.profileBlogData = null;
             }
+            defer.resolve(data);
         })
+        return defer.promise;
     };
 
     $scope.profileTalkGet = function (page = 1) {
@@ -580,7 +657,6 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                     $scope.profileTalkDataMode = data.mode;
                     $scope.talkImagesSet(data.content);
                 }
-                $scope.rocket();
                 $scope.current_page = page;
                 $scope.pageCreateTalk(data);
                 $scope.page_created = true;
@@ -591,6 +667,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.profileCollectGet = function (page = 1) {
+        let defer = $q.defer()
         $rootScope.cubeLoading("加载中...");
         dataService.callOpenApi("profile.collect.get", {
             "page": page + "",
@@ -608,7 +685,6 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                         }
                     })
                 }
-                $scope.rocket();
                 $scope.profileCollectData = data.content || null;
                 $scope.current_page = page;
                 $scope.pageCreateCollect(data);
@@ -616,7 +692,9 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             } else {
                 $scope.profileCollectData = null;
             }
+            defer.resolve()
         })
+        return defer.promise;
     };
 
     $scope.talkLike = function (id, item, index) {
@@ -655,6 +733,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         if (!$scope.page_created) {
             $rootScope.loadpage(function (num, type) {
                 if (num !== $scope.current_page) {
+                    $scope.rocketTop();
                     $scope.profileBlogGet(num);
                 }
             }, "blog")
@@ -667,6 +746,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         if (!$scope.page_created) {
             $rootScope.loadpage(function (num, type) {
                 if (num !== $scope.current_page) {
+                    $scope.rocketTop();
                     $scope.profileTalkGet(num);
                 }
             }, "talk")
@@ -679,6 +759,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         if (!$scope.page_created) {
             $rootScope.loadpage(function (num, type) {
                 if (num !== $scope.current_page) {
+                    $scope.rocketTop();
                     $scope.profileCollectGet(num);
                 }
             }, "collect")
@@ -736,7 +817,6 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                     });
                     $scope.profileLeaveData = data.content || null;
                 }
-                $scope.rocket();
                 $scope.current_page = page;
                 $scope.pageCreateLeave(data);
                 $scope.page_created = true;
@@ -752,6 +832,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         if (!$scope.page_created) {
             $rootScope.loadpage(function (num, type) {
                 if (num !== $scope.current_page) {
+                    $scope.rocketTop();
                     $scope.profileLeave(num);
                 }
             }, "leave")
@@ -769,7 +850,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             el: "#leave-block",
             width: "600px",
             height: "650px",
-            destroy: false,
+            destroy: true,
             hooks: {
                 closed() {
                     $scope.leaveEditor.txt.clear();

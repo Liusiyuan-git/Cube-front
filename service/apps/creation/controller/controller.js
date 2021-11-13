@@ -9,6 +9,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                 let frame = document.getElementById("container");
                 frame.className = "container in";
             }, 300);
+            $scope.blogTitle = {};
             $scope.cover = null
             $scope.sendResult = null;
             $scope.stateJumpConfirm = null;
@@ -23,7 +24,29 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             $scope.editor = new E('#editor-toolbar', '#editor-text');
             $scope.editor.config.height = 1200;
             $scope.editor.config.uploadImgMaxSize = 2 * 1024 * 1024;
-            $scope.editor.config.uploadImgShowBase64 = true
+            $scope.editor.config.customUploadImg = function (resultFiles, insertImgFn) {
+                if (!$scope.loginStatusCheck()) {
+                    $rootScope.cubeWarning('info', '请先登录');
+                    return null
+                }
+                $scope.reader.readAsDataURL(resultFiles[0])
+                $scope.reader.onload = function (e) {
+                    $rootScope.cubeLoading("图片加载中...")
+                    dataService.callOpenApi("draft.image.upload", {
+                        cube_id: $rootScope.userId,
+                        mode: "content",
+                        image: e.target.result
+                    }, "private").then(function (data) {
+                        $rootScope.swal.close();
+                        if (data.success) {
+                            insertImgFn(["http://47.119.151.14:3001/draft", $rootScope.userId, data["filename"]].join("/"))
+                        } else {
+                            $rootScope.cubeWarning('error', data.message || "图片上传失败")
+                        }
+                    })
+                }
+            }
+            // $scope.editor.config.uploadImgShowBase64 = true
             $scope.editor.config.showLinkImg = false;
             $scope.editor.create()
         };
@@ -58,10 +81,11 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                         })
                         if (draft.cover) {
                             $scope.getImgBase64(["http://47.119.151.14:3001/draft", draft["cube_id"], draft.cover].join("/")).then(function (image) {
+                                console.log(image)
                                 $scope.cover = image
                             })
                         }
-                        $scope.title = draft.title
+                        $scope.blogTitle.text = draft.title
                     }
                 } else {
                     $rootScope.cubeWarning('error', "草稿获取失败")
@@ -69,12 +93,29 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             })
         };
 
+
         $scope.upload = function (file) {
+            if (!$scope.loginStatusCheck()) {
+                $rootScope.cubeWarning('info', '请先登录');
+                return null
+            }
             if (file) {
                 $scope.reader.readAsDataURL(file)
                 $scope.reader.onload = function (e) {
-                    $scope.cover = e.target.result
-                    $scope.$apply()
+                    $rootScope.cubeLoading("图片加载中...")
+                    dataService.callOpenApi("draft.image.upload", {
+                        cube_id: $rootScope.userId,
+                        mode: "cover",
+                        image: e.target.result
+                    }, "private").then(function (data) {
+                        $rootScope.swal.close();
+                        if (data.success) {
+                            $scope.cover = ["http://47.119.151.14:3001/draft", $rootScope.userId, data["filename"]].join("/")
+                            $scope.$apply()
+                        } else {
+                            $rootScope.cubeWarning('error', data.message || "图片上传失败")
+                        }
+                    })
                 }
             }
         };
@@ -86,7 +127,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
         $scope.save = function (mode) {
             let defer = $q.defer()
             let text = $scope.editor.txt.text()
-            if (text === '' && !$scope.title && !$scope.cover) {
+            if (text === '' && !$scope.blogTitle.text && !$scope.cover) {
                 $rootScope.cubeWarning('warning', '内容不能为空')
                 if (mode === "state_jump") {
                     defer.reject(false)
@@ -109,9 +150,10 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                 cubeid: $rootScope.userId,
                 images: JSON.stringify($scope.imageBox(content)),
                 cover: $scope.cover,
-                title: $scope.title,
+                title: $scope.blogTitle.text,
                 content: JSON.stringify(content),
             }
+            console.log(params)
             $rootScope.swal.fire({
                 title: '保存',
                 text: '草稿保存中，请稍后',
@@ -136,7 +178,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
 
         $scope.clear = function () {
             let text = $scope.editor.txt.text()
-            if (text === '' && !$scope.title && !$scope.cover) {
+            if (text === '' && !$scope.blogTitle.text && !$scope.cover) {
                 $rootScope.cubeWarning('warning', '内容不能为空')
                 return null
             }
@@ -161,7 +203,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
         };
 
         $scope.allClear = function () {
-            $scope.title = null;
+            $scope.blogTitle.text = null;
             $scope.editor.txt.clear();
             $scope.delete()
         }
@@ -183,11 +225,11 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
 
         $scope.send = function () {
             let text = $scope.editor.txt.text()
-            if (!$scope.title) {
+            if (!$scope.blogTitle.text) {
                 $rootScope.cubeWarning('warning', '请填写标题')
                 return null
             }
-            if ($scope.title.length > 50) {
+            if ($scope.blogTitle.text.length > 50) {
                 $rootScope.cubeWarning('warning', '标题长度不超过50')
                 return null
             }
@@ -204,7 +246,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                 cubeid: $rootScope.userId,
                 images: JSON.stringify($scope.imageBox(content)),
                 cover: $scope.cover,
-                title: $scope.title,
+                title: $scope.blogTitle.text,
                 content: JSON.stringify(content),
                 text: text.replace(/&nbsp;/g, ""),
                 label: $scope.currentMark["key"],
@@ -241,7 +283,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                         if (_item["tag"] && _item["tag"] === 'img') {
                             _item["attrs"].forEach(function (_attr) {
                                 if (_attr["name"] === 'src') {
-                                    _box.push(_attr["value"])
+                                    _box.push(_attr["value"].split("/").pop())
                                     _attr["value"] = ""
                                 }
                                 if (_attr["name"] === 'alt') {
@@ -319,6 +361,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                             $scope.save("state_jump").then(function (result) {
                                 if (result) {
                                     $scope.stateJumpConfirm = true;
+                                    $scope.$emit("userMenuDisplay")
                                     $state.go(toState, toParams);
                                 } else {
                                     $scope.$emit("mainMenu")
@@ -328,13 +371,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                             })
                         } else {
                             $scope.stateJumpConfirm = true;
-                            document.onclick = function (e) {
-                                let element = document.getElementById("user-menu")
-                                if (element) {
-                                    element.style.display = "none";
-                                }
-                                e.stopPropagation();
-                            };
+                            $scope.$emit("userMenuDisplay")
                             $state.go(toState, toParams);
                         }
                     })
