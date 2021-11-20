@@ -46,8 +46,9 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         $scope.currentFilterChild = $scope.forumBlock[filter].child[filterChild];
     };
 
-    $scope.goToUserProfile = function (index) {
-        localStorage.setItem("profileId", $rootScope.userId);
+    $scope.goToUserProfile = function (index, cube_id, e) {
+        e && e.stopPropagation();
+        localStorage.setItem("profileId", cube_id || $rootScope.userId);
         $state.go("profile", {state: 'profile', "menu": index});
     };
 
@@ -95,7 +96,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     };
 
     $scope.collectionGet = function () {
-        if (!$rootScope.userId) {
+        if (!$scope.loginStatusCheck()) {
             return null
         }
         dataService.callOpenApi("cube.collection.get", {"cubeid": $rootScope.userId}, "private").then(function (data) {

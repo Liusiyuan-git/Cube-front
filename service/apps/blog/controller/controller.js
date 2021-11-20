@@ -21,7 +21,8 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
 
     $scope.editorInit = function () {
         $scope.editor = new E('#blog-toolbar', '#blog-text');
-        // $scope.editor.config.height = 1200;
+        $scope.editor.config.height = 1200;
+        $scope.editor.config.zIndex = 2000;
         $scope.editor.config.uploadImgMaxSize = 2 * 1024 * 1024;
         $scope.editor.config.uploadImgShowBase64 = true;
         $scope.editor.config.showLinkImg = false;
@@ -30,8 +31,16 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         $scope.editor.disable();
     };
 
+    $scope.goToUserProfile = function (cube_id, e) {
+        e && e.stopPropagation();
+        localStorage.setItem("profileId", cube_id);
+        $state.go("profile", {state: 'profile', "menu": 0});
+    };
+
     $scope.commentEditorInit = function () {
         $scope.commentEditor = new E('#comment-toolbar', '#comment-text');
+        $scope.commentEditor.config.placeholder = '请填写评论（字数不超200）';
+        $scope.commentEditor.config.zIndex = 2000;
         $scope.commentEditor.config.height = 1200;
         $scope.commentEditor.config.menus = [
             'emoticon'
@@ -88,7 +97,6 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
                     let comment = parseInt(data.content[0]["comment"]);
                     let cover = ["http://47.119.151.14:3001/blog", data.content[0]["cube_id"], date, data.content[0]["cover"]].join("/");
                     $scope.imageSet(content, images, blog["cube_id"], date).then(function () {
-                        console.log(content)
                         $scope.editor.txt.setJSON(content);
                     })
                     $scope.content = data.content[0];
@@ -107,7 +115,7 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         dataService.callOpenApi("user.profile.get", {cubeid: cube_id}, "common").then(function (data) {
             if (data.success && data.profile[0] !== "") {
                 $scope.userImage = "http://47.119.151.14:3001/user/image/" + cube_id + "/" + data.profile[0];
-            }else{
+            } else {
                 $scope.userImage = null;
             }
         })
@@ -145,7 +153,7 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
             if (data.success) {
                 $rootScope.cubeWarning("success", "已取消关注");
                 $scope.userCareConfirm();
-            }else{
+            } else {
                 $rootScope.cubeWarning("error", "未知错误");
             }
         })
@@ -171,26 +179,20 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     };
 
     $scope.imageSet = function (content, images, cubeid, date) {
-        console.log(1111)
         let defer = $q.defer();
-        let length = content.length - 1;
         if (images[0] !== "") {
             content.forEach(function (item) {
                 item["children"].forEach(function (_item) {
                     if (_item["tag"] && _item["tag"] === 'img') {
-                        $scope.getImgBase64(["http://47.119.151.14:3001/blog", cubeid, date, images.shift()].join("/")).then(function (image) {
-                            _item["attrs"].forEach(function (_attr) {
-                                if (_attr["name"] === 'src') {
-                                    _attr["value"] = image;
-                                }
-                                if (_attr["name"] === 'alt') {
-                                    _attr["value"] = image;
-                                }
-                            })
-                            if (images.length === 0) {
-                                defer.resolve();
+                        let image = ["http://47.119.151.14:3001/blog", cubeid, date, images.shift()].join("/")
+                        _item["attrs"].forEach(function (_attr) {
+                            if (_attr["name"] === 'src') {
+                                _attr["value"] = image;
                             }
-                        });
+                        })
+                        if (images.length === 0) {
+                            defer.resolve();
+                        }
                     }
                 })
             })
@@ -302,7 +304,7 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     };
 
     $scope.pageCreate = function (data) {
-        if(data.length){
+        if (data.length) {
             $("#PageCount").val(data.length);
             $("#PageSize").val(10);
             if (!$scope.page_created) {
@@ -313,6 +315,38 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
                 })
             }
         }
+    };
+
+    $scope.commentDelete = function (id, blog_id, cube_id, index) {
+        if (!$scope.loginStatusCheck()) {
+            $rootScope.cubeWarning('info', '请先登录');
+            return null
+        }
+        $rootScope.coco({
+            title: "评论删除",
+            el: "#blog-comment-delete",
+            okText: "确认",
+            buttonColor: '#0077ff',
+        }).onClose(function (ok, cc, done) {
+            if (ok) {
+                dataService.callOpenApi('delete.blog.comment', {
+                    id: id,
+                    index: index + "",
+                    cube_id: cube_id,
+                    blog_id: blog_id,
+                }, 'private').then(function (data) {
+                    if (!data.success) {
+                        $rootScope.cubeWarning('error', data.msg || '未知錯誤')
+                    } else {
+                        $scope.page_created = false;
+                        $scope.commentGet();
+                    }
+                    done()
+                })
+            } else {
+                done()
+            }
+        });
     };
 
     $scope.commentLike = function (item, index) {
@@ -341,9 +375,14 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
             $rootScope.cubeWarning('info', '请输入评论内容');
             return null
         }
+        if (comment.length > 200) {
+            $rootScope.cubeWarning('info', '字数：' + comment.length + " （大于200）");
+            return null
+        }
         dataService.callOpenApi("blog.comment.send", {
             id: $state.params.id,
             cubeid: $rootScope.userId,
+            blogCubeId: $scope.content["cube_id"],
             comment: comment,
             commentNum: JSON.stringify($scope.content["comment"] + 1)
         }, "private").then(function (data) {

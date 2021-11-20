@@ -1,18 +1,19 @@
 let app = require("../../app")
 import "../style/style.scss"
 
-app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService',
-    function ($rootScope, $scope, $state, $timeout, dataService) {
+app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '$q', 'dataService',
+    function ($rootScope, $scope, $state, $timeout, $q, dataService) {
         $scope.initCommunity = function () {
             $rootScope.cubelocation = "community";
             $scope.childHtml = false;
             $rootScope.messageCount = 0;
-            $scope.loginStatusConfirm();
-            $scope.messageProfileGet();
+            $scope.loginStatusConfirm().then(function () {
+                $scope.messageProfileGet();
+            });
         };
 
         $scope.messageProfileGet = function () {
-            if (!$rootScope.userId) {
+            if (!$scope.loginStatusCheck()) {
                 return
             }
             dataService.callOpenApi("message.profile.get", {
@@ -20,13 +21,13 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
             }, "private").then(function (data) {
                 if (data.success) {
                     $rootScope.messageCount = data['profile'][0];
-                    $scope.messageTalkCount = data['profile'][2];
                 }
                 $scope.rabbitMqInit();
             });
         };
 
         $scope.loginStatusConfirm = function () {
+            let defer = $q.defer()
             $rootScope.loginStatusCheck().then(function (data) {
                 if (data.success) {
                     $rootScope.userName = localStorage.getItem("userName");
@@ -43,7 +44,9 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
                     $rootScope.login = false;
                 }
                 $scope.childHtml = true;
+                defer.resolve()
             });
+            return defer.promise;
         }
 
         $scope.loginStatusCheck = function () {
@@ -52,21 +55,23 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
 
         $scope.rabbitMqInit = function () {
             let ws = new WebSocket('ws://81.68.104.55:15674/ws');
-            let client = Stomp.over(ws);
-            client.debug = null;
+            $scope.client = Stomp.over(ws);
+            $scope.client.debug = null;
             let on_connect = function (x) {
-                client.subscribe("/amq/queue/" + $rootScope.userId, function (d) {
-                    $rootScope.messageCount = d.body;
+                $scope.client.subscribe("/amq/queue/" + $rootScope.userId, function (d) {
+                    if ($rootScope.messageCount < d.body) {
+                        $rootScope.messageCount = d.body;
+                    }
                     $scope.$apply();
-                    client.disconnect(function () {
-                        $scope.rabbitMqInit();
-                    });
                 });
             };
-            let on_error = function () {
-                ws.close();
-                $scope.rabbitMqInit();
+            let on_error = function (e) {
+                $scope.rabbitMqInit()
             };
-            client.connect('admin', '201020120402ssS~', on_connect, on_error, '/');
+            $scope.client.connect('admin', '201020120402ssS~', on_connect, on_error, '/');
         };
+
+        $rootScope.$on('$MqClose', function () {
+            $scope.client.disconnect();
+        });
     }])

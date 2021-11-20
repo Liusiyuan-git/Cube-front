@@ -1,4 +1,3 @@
-let app = require("../../app")
 import E from 'wangeditor'
 import "../style/style.scss"
 
@@ -22,8 +21,14 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
 
         $scope.editorInit = function () {
             $scope.editor = new E('#editor-toolbar', '#editor-text');
+            $scope.editor.config.zIndex = 2000;
             $scope.editor.config.height = 1200;
             $scope.editor.config.uploadImgMaxSize = 2 * 1024 * 1024;
+            $scope.editor.config.excludeMenus = [
+                'video',
+                'undo',
+                'redo',
+            ];
             $scope.editor.config.customUploadImg = function (resultFiles, insertImgFn) {
                 if (!$scope.loginStatusCheck()) {
                     $rootScope.cubeWarning('info', '请先登录');
@@ -57,14 +62,13 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                 element.style.display = "inline";
             }
             e.stopPropagation();
-        };
-
-        document.onclick = function (e) {
-            let element = document.getElementById("send-menu")
-            if (element) {
-                element.style.display = "none";
-            }
-            e.stopPropagation();
+            document.onclick = function (e) {
+                let element = document.getElementById("send-menu")
+                if (element) {
+                    element.style.display = "none";
+                }
+                e.stopPropagation();
+            };
         };
 
         $scope.editorDataSet = function () {
@@ -80,10 +84,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                             $scope.editor.txt.setJSON(content)
                         })
                         if (draft.cover) {
-                            $scope.getImgBase64(["http://47.119.151.14:3001/draft", draft["cube_id"], draft.cover].join("/")).then(function (image) {
-                                console.log(image)
-                                $scope.cover = image
-                            })
+                            $scope.cover = ["http://47.119.151.14:3001/draft", draft["cube_id"], draft.cover].join("/");
                         }
                         $scope.blogTitle.text = draft.title
                     }
@@ -110,8 +111,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                     }, "private").then(function (data) {
                         $rootScope.swal.close();
                         if (data.success) {
-                            $scope.cover = ["http://47.119.151.14:3001/draft", $rootScope.userId, data["filename"]].join("/")
-                            $scope.$apply()
+                            $scope.cover = ["http://47.119.151.14:3001/draft", $rootScope.userId, data["filename"]].join("/");
                         } else {
                             $rootScope.cubeWarning('error', data.message || "图片上传失败")
                         }
@@ -120,9 +120,39 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             }
         };
 
-        $scope.delete = function () {
-            $scope.cover = null
+        $scope.delete = function (confirm = true) {
+            if (!$scope.loginStatusCheck()) {
+                $rootScope.cubeWarning('info', '请先登录');
+                return null
+            }
+            if (!confirm) {
+                $scope.deleteFunc();
+                return null;
+            }
+            $rootScope.coco({
+                title: "删除",
+                el: "#cover-delete",
+                okText: "确认",
+                buttonColor: '#0077ff',
+            }).onClose(function (ok, cc, done) {
+                if (ok) {
+                    $scope.deleteFunc();
+                    done();
+                } else {
+                    done();
+                }
+            });
         };
+
+        $scope.deleteFunc = function () {
+            if ($scope.cover) {
+                dataService.callOpenApi("draft.image.delete", {
+                    "cube_id": $rootScope.userId,
+                    "filename": $scope.cover.split("/").pop()
+                }, "private")
+            }
+            $scope.cover = null;
+        }
 
         $scope.save = function (mode) {
             let defer = $q.defer()
@@ -136,7 +166,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                     return null
                 }
             }
-            if (!$rootScope.userId) {
+            if (!$scope.loginStatusCheck()) {
                 $rootScope.cubeWarning('error', '请先登录')
                 if (mode === "state_jump") {
                     defer.reject(false)
@@ -149,11 +179,10 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             let params = {
                 cubeid: $rootScope.userId,
                 images: JSON.stringify($scope.imageBox(content)),
-                cover: $scope.cover,
+                cover: $scope.cover ? $scope.cover.split("/").pop() : "",
                 title: $scope.blogTitle.text,
                 content: JSON.stringify(content),
             }
-            console.log(params)
             $rootScope.swal.fire({
                 title: '保存',
                 text: '草稿保存中，请稍后',
@@ -182,20 +211,19 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                 $rootScope.cubeWarning('warning', '内容不能为空')
                 return null
             }
-            if (!$rootScope.userId) {
+            if (!$scope.loginStatusCheck()) {
                 $rootScope.cubeWarning('error', '请先登录')
                 return null
             }
             $rootScope.confirm('warning', '一鍵清除', '是否清除全部内容？', '确定').then(function (result) {
                 if (result.isConfirmed) {
                     dataService.callOpenApi("remove.draft", {"cubeid": $rootScope.userId}, "private").then(function (data) {
-                        $rootScope.swal.close()
+                        $rootScope.swal.close();
                         if (!data.success) {
                             $rootScope.cubeWarning('error', "清除失败")
                         } else {
-                            $scope.allClear()
+                            $scope.allClear();
                             $rootScope.cubeWarning('success', '内容已全部清除', 3000)
-                            // $scope.$apply()
                         }
                     })
                 }
@@ -205,8 +233,9 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
         $scope.allClear = function () {
             $scope.blogTitle.text = null;
             $scope.editor.txt.clear();
-            $scope.delete()
+            $scope.delete(false)
         }
+
         $scope.scroll = function () {
             let body = document.getElementById("cube-body")
             let rocket = document.getElementById("rocket")
@@ -225,19 +254,20 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
 
         $scope.send = function () {
             let text = $scope.editor.txt.text()
+            text = text.replace(/&nbsp;/g, "").slice(0, 249) + "..."
             if (!$scope.blogTitle.text) {
                 $rootScope.cubeWarning('warning', '请填写标题')
                 return null
             }
-            if ($scope.blogTitle.text.length > 50) {
-                $rootScope.cubeWarning('warning', '标题长度不超过50')
+            if ($scope.blogTitle.text.length > 20) {
+                $rootScope.cubeWarning('warning', '标题长度不超过20')
                 return null
             }
             if (text === '') {
                 $rootScope.cubeWarning('warning', '内容不能为空')
                 return null
             }
-            if (!$rootScope.userId) {
+            if (!$scope.loginStatusCheck()) {
                 $rootScope.cubeWarning('error', '请先登录')
                 return null
             }
@@ -245,10 +275,10 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             let params = {
                 cubeid: $rootScope.userId,
                 images: JSON.stringify($scope.imageBox(content)),
-                cover: $scope.cover,
+                cover: $scope.cover ? $scope.cover.split("/").pop() : "",
                 title: $scope.blogTitle.text,
                 content: JSON.stringify(content),
-                text: text.replace(/&nbsp;/g, ""),
+                text: text,
                 label: $scope.currentMark["key"],
                 labeltype: $scope.currentMarkChild["key"]
             }
@@ -300,24 +330,19 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
 
         $scope.imageSet = function (content, images, cubeid) {
             let defer = $q.defer()
-            let length = content.length - 1
             if (images[0] !== "") {
                 content.forEach(function (item) {
                     item["children"].forEach(function (_item) {
                         if (_item["tag"] && _item["tag"] === 'img') {
-                            $scope.getImgBase64(["http://47.119.151.14:3001/draft", cubeid, images.shift()].join("/")).then(function (image) {
-                                _item["attrs"].forEach(function (_attr) {
-                                    if (_attr["name"] === 'src') {
-                                        _attr["value"] = image
-                                    }
-                                    if (_attr["name"] === 'alt') {
-                                        _attr["value"] = image
-                                    }
-                                })
-                                if (images.length === 0) {
-                                    defer.resolve()
+                            let image = ["http://47.119.151.14:3001/draft", cubeid, images.shift()].join("/")
+                            _item["attrs"].forEach(function (_attr) {
+                                if (_attr["name"] === 'src') {
+                                    _attr["value"] = image
                                 }
                             })
+                            if (images.length === 0) {
+                                defer.resolve()
+                            }
                         }
                     })
                 })
@@ -333,23 +358,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             canvas.height = img.height;
             let ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0, img.width, img.height);
-            let dataURL = canvas.toDataURL("image/" + type);
-            return dataURL;
-        }
-
-        $scope.getImgBase64 = function (src) {
-            console.log(src)
-            let defer = $q.defer()
-            let base64 = "";
-            let img = new Image();
-            img.crossOrigin = 'anonymous'
-            let type = src.split(".").pop()
-            img.src = src;
-            img.onload = function () {
-                base64 = $scope.image2Base64(img, type);
-                defer.resolve(base64)
-            }
-            return defer.promise;
+            return canvas.toDataURL("image/" + type);
         }
 
         $scope.$on('$stateChangeStart', function (event, toState, toParams) {
@@ -361,7 +370,6 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                             $scope.save("state_jump").then(function (result) {
                                 if (result) {
                                     $scope.stateJumpConfirm = true;
-                                    $scope.$emit("userMenuDisplay")
                                     $state.go(toState, toParams);
                                 } else {
                                     $scope.$emit("mainMenu")
@@ -371,7 +379,6 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                             })
                         } else {
                             $scope.stateJumpConfirm = true;
-                            $scope.$emit("userMenuDisplay")
                             $state.go(toState, toParams);
                         }
                     })
