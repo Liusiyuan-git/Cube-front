@@ -139,6 +139,16 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                 $rootScope.cubeWarning('error', data.msg || '未知錯誤')
             } else if (data.length) {
                 $scope.userMessageData = data.content || null;
+                $scope.userMessageData.forEach(function (item) {
+                    if (item.blog === '1' || item.blog_comment === '1') {
+                        let time = item.date.split(" ")[0].split("-").join("")
+                        item.author = item.name
+                        if (item.cover) {
+                            let cover = ["http://47.119.151.14:3001/blog", item.blog === '1' ? item["send_id"] : $rootScope.userId, time, item.cover].join("/")
+                            item.cover = cover
+                        }
+                    }
+                })
                 $scope.current_page = page;
                 $scope.pageCreateMessage(data);
                 $scope.page_created = true;
@@ -147,6 +157,43 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             }
         })
     };
+
+    $scope.blog = function (id) {
+        $state.go("blog", {id: id})
+    };
+
+    $scope.messageDelete = function (item, index) {
+        if (!$scope.loginStatusCheck()) {
+            $rootScope.cubeWarning('info', '请先登录')
+            return null
+        }
+        $rootScope.coco({
+            title: "删除",
+            el: "#message-delete",
+            okText: "确认",
+            buttonColor: '#0077ff',
+        }).onClose(function (ok, cc, done) {
+            if (ok) {
+                $rootScope.cubeLoading("加载中...");
+                dataService.callOpenApi("message.delete", {
+                    "id": item["id"],
+                    "cube_id": $rootScope.userId,
+                    "index": index + "",
+                }, "private").then(function (data) {
+                    $rootScope.swal.close();
+                    if (data.success) {
+                        $scope.page_created = false;
+                        $scope.userMessageGet();
+                    } else {
+                        $rootScope.cubeWarning("error", data.message || "未知错误")
+                    }
+                })
+                done()
+            } else {
+                done()
+            }
+        });
+    }
 
     $scope.talkImagesClick = function (image) {
         const viewer = new Viewer(document.getElementById(image), {

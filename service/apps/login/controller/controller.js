@@ -16,6 +16,7 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
         $scope.count_save = true;
         $scope.phone_save = true;
         $scope.code_show = true;
+        $scope.eye = true;
         $scope.login = "count";
         $scope.box = ["count", "phone"]
         $rootScope.cubelocation = "login";
@@ -146,7 +147,7 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
                     } else {
                         $rootScope.userId = data['cubeId'];
                         $rootScope.userName = data['userName'];
-                        $rootScope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data["image"];
+                        $rootScope.userImage = data["image"] ? "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data["image"] : null;
                         $rootScope.login = true;
                         $scope.setLoginStartTime(data)
                         $rootScope.cubeWarning('success', "登录成功", 3000).then(function () {
@@ -156,6 +157,16 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
                 })
             }
         })
+    };
+
+    $scope.eyeClick = function () {
+        let input = document.getElementById("input-password");
+        if (input.type === 'password') {
+            input.type = 'text'
+        } else {
+            input.type = 'password'
+        }
+        $scope.eye = !$scope.eye;
     };
 
     $scope.setLoginStartTime = function (data) {

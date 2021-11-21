@@ -158,6 +158,41 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
         });
     };
 
+    $scope.talkDelete = function (id, cube_id, images, date, index) {
+        if (!$scope.loginStatusCheck()) {
+            $rootScope.cubeWarning('info', '请先登录');
+            return null
+        }
+        $rootScope.coco({
+            title: "评论删除",
+            el: "#talk-delete",
+            okText: "确认",
+            buttonColor: '#0077ff',
+        }).onClose(function (ok, cc, done) {
+            if (ok) {
+                dataService.callOpenApi('talk.delete', {
+                    id: id,
+                    index: index + "",
+                    images: images,
+                    date: date,
+                    cube_id: cube_id,
+                }, 'private').then(function (data) {
+                    if (!data.success) {
+                        $rootScope.cubeWarning('error', data.msg || '未知錯誤')
+                    } else {
+                        $scope.page_created = false;
+                        $scope.profileTalkGet().then(function () {
+                            $scope.userProfileGet();
+                        });
+                    }
+                    done()
+                })
+            } else {
+                done()
+            }
+        });
+    };
+
     $scope.talkComment = function (id, item, index) {
         $scope.currentTalk = item;
         $scope.currentTalkIndex = index;
@@ -167,7 +202,6 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
             $scope.talkCommentGet(id, item);
         }, 500)
     };
-
 
     $scope.talkCommentDialog = function () {
         $scope.commentDialog = new ($rootScope.coco({
@@ -179,7 +213,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
         })).onClose(function (ok, cc, done) {
             $scope.talkCommentEditor.destroy();
             $scope.talkCommentEditor = null;
-            $rootScope.talkCommentData = null;
+            $scope.talkCommentData = null;
             $scope.talk_comment_page_created = false;
             done()
         })
@@ -206,8 +240,8 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
             } else {
                 item.commentData = data.content;
                 item.comment = data.length;
-                $rootScope.talkCommentData = data.content;
-                if ($rootScope.talkCommentData) {
+                $scope.talkCommentData = data.content;
+                if ($scope.talkCommentData) {
                     $timeout(function () {
                         $scope.talk_comment_current_page = page;
                         $scope.talkCommentPageCreate(data, id, item);
@@ -223,19 +257,25 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
         let item = $scope.currentTalk;
         let id = $scope.currentTalk.id;
         let index = $scope.currentTalkIndex;
+        let talkCubeId = $scope.currentTalk["cube_id"]
         item.comment = parseInt(item.comment) + 1
         let text = $scope.talkCommentEditor.txt.text()
+        if (!$scope.loginStatusCheck()) {
+            $rootScope.cubeWarning('error', '请先登录');
+            return null
+        }
         if (text === '') {
             $rootScope.cubeWarning('warning', '内容不能为空');
             return null
         }
-        if (!$scope.loginStatusCheck()) {
-            $rootScope.cubeWarning('error', '请先登录');
+        if (text.length > 200) {
+            $rootScope.cubeWarning('warning', '字数：' + text.length + " （大于200）");
             return null
         }
         dataService.callOpenApi('send.talk.comment', {
             id: id,
             cubeid: $rootScope.userId,
+            talkCubeId: talkCubeId,
             text: text,
         }, 'private').then(function (data) {
             if (data.success) {
@@ -250,12 +290,12 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
         })
     };
 
-    $scope.talkCommentDelete = function (id, item_id, item, index) {
+    $scope.talkCommentDelete = function (id, item_id, item, cube_id, index) {
         if (!$scope.loginStatusCheck()) {
             $rootScope.cubeWarning('info', '请先登录');
             return null
         }
-        item.comment = parseInt(item.comment) - 1;
+        let talkIndex = $scope.currentTalkIndex;
         $rootScope.coco({
             title: "评论删除",
             el: "#delete",
@@ -263,16 +303,17 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
             buttonColor: '#0077ff',
         }).onClose(function (ok, cc, done) {
             if (ok) {
-                dataService.callOpenApi('delete.talk.Comment', {
-                    id: id + "",
-                    cubeid: $rootScope.userId,
-                    talkid: item_id,
+                dataService.callOpenApi('delete.talk.comment', {
+                    id: id,
                     index: index + "",
-                    comment: JSON.stringify(item.comment)
+                    cubeid: cube_id,
+                    talkid: item_id,
                 }, 'private').then(function (data) {
                     if (!data.success) {
-                        $rootScope.cubeWarning('error', data.msg || '未知錯誤');
+                        $rootScope.cubeWarning('error', data.msg || '未知錯誤')
                     } else {
+                        $scope.profileTalkDataCount[2 * talkIndex + 1] = parseInt($scope.profileTalkDataCount[2 * talkIndex + 1]) - 1;
+                        $scope.talk_comment_page_created = false;
                         $scope.talkCommentGet(item_id, item);
                     }
                     done()
@@ -288,6 +329,8 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
         $("#PageSize" + 'talkComment').val(10);
         if (!$scope.talk_comment_page_created) {
             $rootScope.loadpage(function (num, type) {
+                let talkIndex = $scope.currentTalkIndex;
+                $scope.profileTalkDataCount[2 * talkIndex + 1] = data.length;
                 if (num !== $scope.talk_comment_current_page) {
                     $scope.talkCommentGet(id, item, num);
                 }
@@ -301,6 +344,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
             'emoticon'
         ]
         $scope.talkCommentEditor.config.showFullScreen = false;
+        $scope.talkCommentEditor.config.placeholder = '请填写评论（字数不超200）';
         $scope.talkCommentEditor.config.showMenuTooltips = false;
         $scope.talkCommentEditor.config.height = 33;
         $scope.talkCommentEditor.create();
@@ -347,7 +391,6 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
         let menu = parseInt($state.params.menu)
         if (!$scope.options[menu]) {
             $scope.currentOption = $scope.options[0];
-            $state.go("profile", {menu: 0}, {notify: false, reload: false})
         } else {
             $scope.currentOption = $scope.options[menu];
         }
@@ -356,6 +399,10 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
 
     $scope.blogDelete = function (e, item, index) {
         e.stopPropagation();
+        if (!$scope.loginStatusCheck()) {
+            $rootScope.cubeWarning('info', '请先登录')
+            return null
+        }
         $rootScope.coco({
             title: "删除",
             el: "#blog-delete",
@@ -368,10 +415,10 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
                     "label": item["label"],
                     "label_type": item["label_type"],
                     "index": index + "",
-                    "cover": item["cover"],
-                    "data": item["date"],
+                    "cover": item["cover"] ? item["cover"].split("/").pop() : "",
+                    "date": item["date"],
                     "image": item["image"],
-                    "blog_id": item["id"],
+                    "blog_id": item["id"] + "",
                     "cube_id": item["cube_id"]
                 }, "private").then(function (data) {
                     $rootScope.swal.close();
@@ -392,6 +439,10 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
     };
 
     $scope.collectDelete = function (e, item, index) {
+        if (!$scope.loginStatusCheck()) {
+            $rootScope.cubeWarning('info', '请先登录')
+            return null
+        }
         e.stopPropagation();
         $rootScope.coco({
             title: "删除",
@@ -422,6 +473,40 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
             }
         });
     };
+
+    $scope.leaveDelete = function (item, index) {
+        if (!$scope.loginStatusCheck()) {
+            $rootScope.cubeWarning('info', '请先登录')
+            return null
+        }
+        $rootScope.coco({
+            title: "删除",
+            el: "#leave-delete",
+            okText: "确认",
+            buttonColor: '#0077ff',
+        }).onClose(function (ok, cc, done) {
+            if (ok) {
+                $rootScope.cubeLoading("加载中...");
+                dataService.callOpenApi("profile.leave.delete", {
+                    "id": item["id"],
+                    "index": index + "",
+                    "leave_id": item["leave_id"],
+                    "cube_id": item["cube_id"]
+                }, "private").then(function (data) {
+                    $rootScope.swal.close();
+                    if (data.success) {
+                        $scope.page_created = false;
+                        $scope.profileLeave();
+                    } else {
+                        $rootScope.cubeWarning("error", data.message || "未知错误")
+                    }
+                })
+                done()
+            } else {
+                done()
+            }
+        });
+    }
 
     $scope.loadingImg = function (eve) {
         let reader = new FileReader();
@@ -644,6 +729,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
     };
 
     $scope.profileTalkGet = function (page = 1) {
+        let defer = $q.defer();
         $rootScope.cubeLoading("加载中...");
         dataService.callOpenApi("profile.talk.get", {
             "page": page + "",
@@ -663,7 +749,9 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
             } else {
                 $scope.profileTalkData = null;
             }
+            defer.resolve(data);
         })
+        return defer.promise;
     };
 
     $scope.profileCollectGet = function (page = 1) {
@@ -780,7 +868,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
 
     $scope.goToUserProfile = function (cube_id) {
         localStorage.setItem("profileId", cube_id);
-        $state.go("profile", {state: 'profile'}, {reload: true});
+        $state.go("profile", {state: 'profile', "menu": 0}, {reload: true});
     };
 
     $scope.profileCare = function () {
@@ -861,12 +949,16 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
         }).onClose(function (ok, cc, done) {
             if (ok) {
                 let text = $scope.leaveEditor.txt.text()
+                if (!$scope.loginStatusCheck()) {
+                    $rootScope.cubeWarning('error', '请先登录');
+                    return null
+                }
                 if (text === '') {
                     $rootScope.cubeWarning('warning', '内容不能为空');
                     return null
                 }
-                if (!$scope.loginStatusCheck()) {
-                    $rootScope.cubeWarning('error', '请先登录');
+                if (text.length > 200) {
+                    $rootScope.cubeWarning('warning', '字数：' + text.length + "（ 大于200）");
                     return null
                 }
                 dataService.callOpenApi('profile.leave.set', {
@@ -894,6 +986,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
             'emoticon'
         ];
         $scope.leaveEditor.config.showFullScreen = false;
+        $scope.leaveEditor.config.placeholder = '请填写留言（字数不超200）';
         $scope.leaveEditor.config.menuTooltipPosition = 'up';
         $scope.leaveEditor.config.showMenuTooltips = false;
         $scope.leaveEditor.config.height = 33;
