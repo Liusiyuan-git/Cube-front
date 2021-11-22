@@ -17,6 +17,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.initParams = function () {
+        $scope.scopeId = $scope.$id;
         $scope.talkImages = [];
         $scope.currentTalkingMenu = $scope.talkingMenu[0];
         $scope.talkCommentLength = 0;
@@ -24,7 +25,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
 
     $scope.goToUserProfile = function (cube_id) {
         localStorage.setItem("profileId", cube_id);
-        $state.go("profile", {state: 'profile'});
+        $state.go("profile", {state: 'profile', "menu": 0});
     };
 
     $scope.talkDataGet = function (mode = "new", page = 1) {
@@ -47,7 +48,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                 $scope.current_page = page;
                 $scope.pageCreate(data);
                 $scope.page_created = true;
-            }else{
+            } else {
                 $scope.talkData = null;
             }
         })
@@ -95,6 +96,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         if (!$scope.page_created) {
             $rootScope.loadpage(function (num) {
                 if (num !== $scope.current_page) {
+                    $scope.rocketTop();
                     $scope.talkDataGet($scope.currentTalkingMenu["key"], num)
                 }
             })
@@ -110,9 +112,9 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             item.select = item.key === key
         })
         if (key === "care") {
-            $scope.profileCare().then(function (){
+            $scope.profileCare().then(function () {
                 $scope.careSelect(0)
-            },function (){
+            }, function () {
                 $scope.profileCareData = null;
             });
         } else {
@@ -123,7 +125,8 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     $scope.talkEditorInit = function () {
         $scope.talkEditor = new E('#talk-toolbar', '#talk-text');
         $scope.talkEditor.config.height = 1200;
-        $scope.talkEditor.config.placeholder = '分享点学习、工作、生活的新鲜事';
+        $scope.talkEditor.config.zIndex = 2000;
+        $scope.talkEditor.config.placeholder = '分享点学习、工作、生活的新鲜事（不超过200个字）';
         $scope.talkEditor.config.showMenuTooltips = false;
         $scope.talkEditor.config.menus = [
             'emoticon', 'image'
@@ -186,19 +189,25 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         let item = $scope.currentTalk;
         let id = $scope.currentTalk.id;
         let index = $scope.currentTalkIndex;
+        let talkCubeId = $scope.currentTalk["cube_id"]
         item.comment = parseInt(item.comment) + 1
         let text = $scope.talkCommentEditor.txt.text()
+        if (!$scope.loginStatusCheck()) {
+            $rootScope.cubeWarning('info', '请先登录')
+            return null
+        }
         if (text === '') {
             $rootScope.cubeWarning('warning', '内容不能为空')
             return null
         }
-        if (!$rootScope.userId) {
-            $rootScope.cubeWarning('error', '请先登录')
+        if (text.length > 200) {
+            $rootScope.cubeWarning('warning', '字数：' + text.length + " （大于200）")
             return null
         }
         dataService.callOpenApi('send.talk.comment', {
             id: id,
             cubeid: $rootScope.userId,
+            talkCubeId: talkCubeId,
             text: text,
         }, 'private').then(function (data) {
             if (data.success) {
@@ -241,6 +250,8 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         $("#PageCount" + 'talkComment').val(data.length);
         $("#PageSize" + 'talkComment').val(10);
         if (!$scope.talk_comment_page_created) {
+            let talkIndex = $scope.currentTalkIndex;
+            $scope.profileTalkDataCount[2 * talkIndex + 1] = data.length;
             $rootScope.loadpage(function (num) {
                 if (num !== $scope.talk_comment_current_page) {
                     $scope.talkCommentGet(id, item, num);
@@ -251,12 +262,16 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
 
     $scope.talkSend = function () {
         let text = $scope.talkEditor.txt.text();
+        if (!$scope.loginStatusCheck()) {
+            $rootScope.cubeWarning('error', '请先登录');
+            return null
+        }
         if (text === '') {
             $rootScope.cubeWarning('warning', '内容不能为空');
             return null
         }
-        if (!$rootScope.userId) {
-            $rootScope.cubeWarning('error', '请先登录');
+        if (text.length > 200) {
+            $rootScope.cubeWarning('warning', '字数：' + text.length + " （大于200）");
             return null
         }
         $rootScope.cubeLoading("发送中...");
@@ -290,24 +305,38 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         })
     };
 
-    $scope.talkCommentDelete = function (id, item_id, item) {
-        item.comment = parseInt(item.comment) - 1
-        $rootScope.confirm('info', '删除评论', '是否删除该条评论？', '确定').then(function (result) {
-            if (result.isConfirmed) {
-                dataService.callOpenApi('delete.talk.Comment', {
+    $scope.talkCommentDelete = function (id, item_id, item, cube_id, index) {
+        if (!$scope.loginStatusCheck()) {
+            $rootScope.cubeWarning('info', '请先登录');
+            return null
+        }
+        let talkIndex = $scope.currentTalkIndex;
+        $rootScope.coco({
+            title: "评论删除",
+            el: "#delete",
+            okText: "确认",
+            buttonColor: '#0077ff',
+        }).onClose(function (ok, cc, done) {
+            if (ok) {
+                dataService.callOpenApi('delete.talk.comment', {
                     id: id,
-                    cubeid: $rootScope.userId,
+                    index: index + "",
+                    cubeid: cube_id,
                     talkid: item_id,
-                    comment: JSON.stringify(item.comment)
                 }, 'private').then(function (data) {
                     if (!data.success) {
                         $rootScope.cubeWarning('error', data.msg || '未知錯誤')
                     } else {
+                        $scope.talkDataCount[2 * talkIndex + 1] = parseInt($scope.talkDataCount[2 * talkIndex + 1]) - 1;
+                        $scope.talk_comment_page_created = false;
                         $scope.talkCommentGet(item_id, item);
                     }
+                    done()
                 })
+            } else {
+                done()
             }
-        })
+        });
     };
 
     $scope.talkComment = function (id, item, index) {
@@ -321,14 +350,11 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     };
 
     $scope.talkCommentDialog = function () {
-        $rootScope.coco({
+        $scope.commentDialog = $rootScope.coco({
             title: "评论",
-            el: "#talk-comment-block",
+            el: "#talk-comment-block-" + $scope.scopeId,
             width: "600px",
             height: "650px",
-            zIndexOfModal: 10002,
-            zIndexOfMask: 10001,
-            zIndexOfActiveModal: 10002,
             destroy: false,
         }).onClose(function (ok, cc, done) {
             $scope.talkCommentEditor.destroy();
@@ -345,6 +371,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             'emoticon'
         ];
         $scope.talkCommentEditor.config.showFullScreen = false;
+        $scope.talkCommentEditor.config.placeholder = '请填写评论（字数不超200）';
         $scope.talkCommentEditor.config.height = 33;
         $scope.talkCommentEditor.config.showMenuTooltips = false;
         $scope.talkCommentEditor.create();
@@ -361,7 +388,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                 });
                 $scope.profileCareData = data["profileCare"];
                 defer.resolve();
-            }else{
+            } else {
                 defer.reject();
             }
         })
@@ -396,7 +423,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                 $scope.current_page = page;
                 $scope.pageCreateCare(data);
                 $scope.page_created = true;
-            }else{
+            } else {
                 $scope.talkData = null;
             }
         })
@@ -408,11 +435,25 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
         if (!$scope.page_created) {
             $rootScope.loadpage(function (num) {
                 if (num !== $scope.current_page) {
+                    $scope.rocketTop();
                     $scope.careDataGet($scope.currentCareId, num);
                 }
             })
         }
     };
+
+    $scope.rocketTop = function () {
+        document.documentElement.scrollIntoView({block: 'start'})
+    };
+
+    $scope.$on('$stateChangeStart', function (event, toState, toParams) {
+        if ($scope.commentDialog) {
+            $scope.commentDialog.onClose(function () {
+            })
+            $scope.commentDialog.destroyModal();
+            $scope.commentDialog.close()
+        }
+    });
 
     $scope.talkingMenu = [{
         key: "new",
@@ -421,10 +462,6 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
     }, {
         key: "hot",
         name: "精华",
-        select: false
-    }, {
-        key: "care",
-        name: "关注",
         select: false
     }]
 }])

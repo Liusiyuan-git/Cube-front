@@ -179,7 +179,7 @@ app.controller("searchCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dat
 
     $scope.goToUserProfile = function (cube_id) {
         localStorage.setItem("profileId", cube_id);
-        $state.go("profile", {state: 'profile'});
+        $state.go("profile", {state: 'profile', "menu": 0});
     };
 
     $scope.pageBlogCreate = function (data) {
@@ -195,6 +195,12 @@ app.controller("searchCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dat
                 }, "blog")
             }
         }
+    };
+
+    $scope.goToUserProfile = function (cube_id, e) {
+        e && e.stopPropagation();
+        localStorage.setItem("profileId", cube_id);
+        $state.go("profile", {state: 'profile', "menu": 0});
     };
 
     $scope.pageTalkCreate = function (data) {

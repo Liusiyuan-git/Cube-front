@@ -22,6 +22,10 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
         $rootScope.cubelocation = "login";
     };
 
+    $scope.countChange = function () {
+
+    };
+
     $scope.loginStatusCheck = function () {
         $rootScope.loginStatusCheck().then(function (data) {
             if (data.success) {
@@ -102,7 +106,7 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
             mode: "login"
         }, "user").then(function (data) {
             if (data.success) {
-                $rootScope.cubeWarning("info", $rootScope.PhoneMessage[JSON.parse(data.content).Response.SendStatusSet[0].Code], 10000)
+                $rootScope.cubeWarning("info", $rootScope.PhoneMessage[JSON.parse(data.content).Response.SendStatusSet[0].Code] || "验证码已发送", 10000)
             } else {
                 $rootScope.cubeWarning("error", "未知错误")
             }
@@ -170,7 +174,6 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
     };
 
     $scope.setLoginStartTime = function (data) {
-        let date = (Date.parse(new Date())) / 1000
         localStorage.setItem("setLoginStartTime", date);
         localStorage.setItem("CubeId", data['cubeId']);
         localStorage.setItem("userName", data['userName']);
@@ -245,14 +248,7 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
                             data.msg
                         )
                     } else {
-                        $scope.swal.fire({
-                            icon: 'success',
-                            title: '密码修改成功',
-                            text: '请重新登录',
-                            showConfirmButton: false,
-                            showCancelButton: false,
-                            timer: 2000
-                        });
+                        $scope.cubeWarning("success", "密码修改成功");
                     }
                 })
             },
@@ -289,7 +285,7 @@ app.controller("loginCtrl", ['$rootScope', '$scope', '$state', '$timeout', '$int
                     mode: "password"
                 }, "user").then(function (data) {
                     if (data.success) {
-                        $rootScope.cubeWarning("info", $rootScope.PhoneMessage[JSON.parse(data.content).Response.SendStatusSet[0].Code], 10000)
+                        // $rootScope.cubeWarning("info", $rootScope.PhoneMessage[JSON.parse(data.content).Response.SendStatusSet[0].Code], 10000)
                     } else {
                         $rootScope.cubeWarning("error", "未知错误")
                     }

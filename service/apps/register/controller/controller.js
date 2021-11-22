@@ -4,7 +4,7 @@ import "../style/style.scss"
 app.controller("registerCtrl", ['$rootScope', '$scope', '$interval', 'dataService', '$timeout', '$state', function ($rootScope, $scope, $interval, dataService, $timeout, $state) {
     $scope.init = function () {
         $scope.initparams()
-    }
+    };
 
     $scope.verification = function () {
         $scope.send = true;
@@ -20,15 +20,16 @@ app.controller("registerCtrl", ['$rootScope', '$scope', '$interval', 'dataServic
             mode: "register"
         }, "user").then(function (data) {
             if (data.success) {
-                $rootScope.cubeWarning("info", $rootScope.PhoneMessage[JSON.parse(data.content).Response.SendStatusSet[0].Code],10000)
+                $rootScope.cubeWarning("info", $rootScope.PhoneMessage[JSON.parse(data.content).Response.SendStatusSet[0].Code] || "验证码已发送成功", 10000)
             } else {
                 $rootScope.cubeWarning("error", "未知错误")
             }
         })
-    }
+    };
 
     $scope.initparams = function () {
         $scope.send = false;
+        $scope.eye = true;
         $scope.params = {
             email: null,
             password: null,
@@ -42,7 +43,23 @@ app.controller("registerCtrl", ['$rootScope', '$scope', '$interval', 'dataServic
             phone: {check: true, msg: "请输入正确的手机号"},
             code: {check: true, msg: "验证码不能为空"}
         }
-    }
+    };
+
+    $scope.eyeClick = function () {
+        let input1 = document.getElementById("input-password1");
+        let input2 = document.getElementById("input-password2");
+        if (input1.type === 'password') {
+            input1.type = 'text'
+        } else {
+            input1.type = 'password'
+        }
+        if (input2.type === 'password') {
+            input2.type = 'text'
+        } else {
+            input2.type = 'password'
+        }
+        $scope.eye = !$scope.eye
+    };
 
     $scope.emailCount = function (event) {
         let re = /^([a-zA-Z0-9]+[-_\.]?)+@[a-zA-Z0-9]+\.[a-z]+$/;
@@ -54,7 +71,7 @@ app.controller("registerCtrl", ['$rootScope', '$scope', '$interval', 'dataServic
             $scope.params.email = null;
             $scope.wrongMessage.email.check = false
         }
-    }
+    };
 
     $scope.passwordInput = function (event) {
         $scope.password_input = event.target.value
@@ -62,12 +79,12 @@ app.controller("registerCtrl", ['$rootScope', '$scope', '$interval', 'dataServic
         if ($scope.password_repeat) {
             $scope.passwordCheck($scope.password_repeat)
         }
-    }
+    };
 
     $scope.passwordRepeat = function (event) {
         $scope.password_repeat = event.target.value;
         $scope.passwordCheck($scope.password_repeat)
-    }
+    };
 
 
     $scope.passwordCheck = function (value) {
@@ -82,7 +99,7 @@ app.controller("registerCtrl", ['$rootScope', '$scope', '$interval', 'dataServic
             $scope.wrongMessage.password_wrong.check = false
             $scope.params.password = value
         }
-    }
+    };
 
     $scope.phoneNumber = function (event) {
         let number = event.target.value;
@@ -94,7 +111,7 @@ app.controller("registerCtrl", ['$rootScope', '$scope', '$interval', 'dataServic
             $scope.params.phone = null;
             $scope.wrongMessage.phone.check = false
         }
-    }
+    };
 
     $scope.codeInput = function (event) {
         let code = event.target.value
@@ -105,7 +122,7 @@ app.controller("registerCtrl", ['$rootScope', '$scope', '$interval', 'dataServic
             $scope.wrongMessage.code.check = false
             $scope.params.code = null
         }
-    }
+    };
 
     $scope.register = function () {
         if ($scope.paramsCheck()) {
@@ -119,14 +136,7 @@ app.controller("registerCtrl", ['$rootScope', '$scope', '$interval', 'dataServic
                         $rootScope.swal.showLoading();
                         dataService.callOpenApi("user.register", $scope.params, "register").then(function (data) {
                             $rootScope.swal.close()
-                            $scope.swal.fire({
-                                icon: data.success ? 'success' : 'error',
-                                title: data.success ? '注册成功' : '注册失败',
-                                text: data.success ? '正在跳转...' : data.msg,
-                                showConfirmButton: false,
-                                showCancelButton: false,
-                                timer: 2000
-                            });
+                            $rootScope.cubeWarning(data.success ? 'success' : 'error', data.success ? '注册成功' : '注册失败')
                             if (data.success) {
                                 $timeout(function () {
                                     $state.go("login")
@@ -146,7 +156,7 @@ app.controller("registerCtrl", ['$rootScope', '$scope', '$interval', 'dataServic
                 timer: 2000
             })
         }
-    }
+    };
 
     $scope.paramsCheck = function () {
         let result = true
@@ -156,5 +166,9 @@ app.controller("registerCtrl", ['$rootScope', '$scope', '$interval', 'dataServic
             }
         })
         return result
+    };
+
+    $scope.cubeLogin = function () {
+        $state.go("login", {state: "login"});
     };
 }])
