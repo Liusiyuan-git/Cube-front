@@ -95,7 +95,7 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
                     let images = blog.image.split(":");
                     let date = blog.date.split(" ")[0].split("-").join("");
                     let comment = parseInt(data.content[0]["comment"]);
-                    let cover = ["http://47.119.151.14:3001/blog", data.content[0]["cube_id"], date, data.content[0]["cover"]].join("/");
+                    let cover = [$rootScope.fileServer + "/blog", data.content[0]["cube_id"], date, data.content[0]["cover"]].join("/");
                     $scope.imageSet(content, images, blog["cube_id"], date).then(function () {
                         $scope.editor.txt.setJSON(content);
                     })
@@ -114,7 +114,7 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     $scope.userProfileGet = function (cube_id) {
         dataService.callOpenApi("user.profile.get", {cubeid: cube_id}, "common").then(function (data) {
             if (data.success && data.profile[0] !== "") {
-                $scope.userImage = "http://47.119.151.14:3001/user/image/" + cube_id + "/" + data.profile[0];
+                $scope.userImage = $rootScope.fileServer + "/user/image/" + cube_id + "/" + data.profile[0];
             } else {
                 $scope.userImage = null;
             }
@@ -184,7 +184,7 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
             content.forEach(function (item) {
                 item["children"].forEach(function (_item) {
                     if (_item["tag"] && _item["tag"] === 'img') {
-                        let image = ["http://47.119.151.14:3001/blog", cubeid, date, images.shift()].join("/")
+                        let image = [$rootScope.fileServer + "/blog", cubeid, date, images.shift()].join("/")
                         _item["attrs"].forEach(function (_attr) {
                             if (_attr["name"] === 'src') {
                                 _attr["value"] = image;
