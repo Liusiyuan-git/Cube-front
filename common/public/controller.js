@@ -24,7 +24,8 @@ app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', 'dat
         $rootScope.login = false;
         $scope.wait = false;
         $rootScope.coco = coco;
-        $rootScope.fileServer = "http://47.119.151.14:3001"
+        // $rootScope.fileServer = "http://47.119.151.14:3001"
+        $rootScope.fileServer = "https://www.cube.fan:3001"
     };
 
     $rootScope.showWaiting = function () {

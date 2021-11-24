@@ -22,7 +22,7 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
                 if (data.success) {
                     $rootScope.messageCount = data['profile'][0];
                 }
-                $scope.rabbitMqInit();
+                // $scope.rabbitMqInit();
             });
         };
 
@@ -32,10 +32,9 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
                 if (data.success) {
                     $rootScope.userName = localStorage.getItem("userName");
                     $rootScope.userId = localStorage.getItem("CubeId");
-                    $rootScope.userImage = localStorage.getItem("userImage") ? "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + localStorage.getItem("userImage") : null;
+                    $rootScope.userImage = localStorage.getItem("userImage") ? $rootScope.fileServer + "/user/image/" + $rootScope.userId + "/" + localStorage.getItem("userImage") : null;
                     $rootScope.login = true;
                 } else {
-                    localStorage.removeItem('setLoginStartTime');
                     localStorage.removeItem('CubeId');
                     localStorage.removeItem('userImage');
                     localStorage.removeItem('userName');
@@ -54,6 +53,7 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
         };
 
         $scope.rabbitMqInit = function () {
+            // let ws = new WebSocket('ws://81.68.104.55:15674/ws');
             let ws = new WebSocket('ws://81.68.104.55:15674/ws');
             $scope.client = Stomp.over(ws);
             $scope.client.debug = null;
