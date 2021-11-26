@@ -12,7 +12,7 @@ import "../styles/common.coco.scss"
 import "./stomp"
 import coco from 'coco-modal'
 
-app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', 'dataService', function ($rootScope, $scope, $state, $q, dataService) {
+app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', '$location', 'dataService', function ($rootScope, $scope, $state, $q, $location, dataService) {
     $scope.init = function () {
         $scope.initParams();
         $state.go("home")
