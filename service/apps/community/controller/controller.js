@@ -22,7 +22,7 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
                 if (data.success) {
                     $rootScope.messageCount = data['profile'][0];
                 }
-                // $scope.rabbitMqInit();
+                $scope.rabbitMqInit();
             });
         };
 
@@ -53,25 +53,32 @@ app.controller("communityCtrl", ["$rootScope", "$scope", "$state", "$timeout", '
         };
 
         $scope.rabbitMqInit = function () {
-            // let ws = new WebSocket('ws://81.68.104.55:15674/ws');
-            let ws = new WebSocket('ws://81.68.104.55:15674/ws');
-            $scope.client = Stomp.over(ws);
-            $scope.client.debug = null;
-            let on_connect = function (x) {
-                $scope.client.subscribe("/amq/queue/" + $rootScope.userId, function (d) {
-                    if ($rootScope.messageCount < d.body) {
-                        $rootScope.messageCount = d.body;
-                    }
-                    $scope.$apply();
-                });
-            };
-            let on_error = function (e) {
-                $scope.rabbitMqInit()
-            };
-            $scope.client.connect('admin', '201020120402ssS~', on_connect, on_error, '/');
+            if ($scope.client == null || !$scope.client.connected) {
+                // let ws = new WebSocket('ws://81.68.104.55:15674/ws');
+                // let ws = new WebSocket('ws://43.155.100.23:445/ws');
+                let ws = new WebSocket('wss://cube.fan:445/ws');
+                $scope.client = Stomp.over(ws);
+                $scope.client.debug = null;
+                $scope.client.connect('user', 's', $scope.onConnect, $scope.onError, '/');
+            }
+        };
+
+        $scope.onConnect = function () {
+            $scope.client.subscribe("/amq/queue/" + $rootScope.userId, function (d) {
+                if ($rootScope.messageCount < d.body) {
+                    $rootScope.messageCount = d.body;
+                }
+                $scope.$apply();
+            });
+        };
+
+        $scope.onError = function (e) {
+            $scope.rabbitMqInit()
         };
 
         $rootScope.$on('$MqClose', function () {
-            $scope.client.disconnect();
+            if ($scope.client.connected) {
+                $scope.client.disconnect();
+            }
         });
     }])

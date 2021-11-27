@@ -25,7 +25,23 @@ app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', '$lo
         $scope.wait = false;
         $rootScope.coco = coco;
         // $rootScope.fileServer = "http://47.119.151.14:3001"
+        // $rootScope.fileServer = "http://43.155.100.23:3001"
         $rootScope.fileServer = "https://www.cube.fan:3001"
+        $rootScope.typeLibrary = {
+            python: "Python",
+            go: "Go",
+            java: "Java",
+            javaScript: "JavaScript",
+            "c++": "C++",
+            c: "C",
+            redis: "Redis",
+            rabbitmq: "Rabbitmq",
+            docker: "Docker",
+            kubernetes: "kubernetes",
+            microServices: "微服务",
+            mysql: "Mysql",
+            live: "生活"
+        };
     };
 
     $rootScope.showWaiting = function () {
