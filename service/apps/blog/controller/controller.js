@@ -2,6 +2,8 @@ import E from "wangeditor";
 
 let app = require("../../app")
 import "../style/style.scss"
+import hljs from 'highlight.js'
+import 'highlight.js/styles/monokai-sublime.css'
 
 app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService', '$q', function ($rootScope, $scope, $state, $timeout, dataService, $q) {
     $scope.init = function () {
@@ -27,6 +29,7 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         $scope.editor.config.uploadImgShowBase64 = true;
         $scope.editor.config.showLinkImg = false;
         $scope.editor.config.fontSizes = "17";
+        $scope.editor.highlight = hljs;
         $scope.editor.create();
         $scope.editor.disable();
     };
@@ -182,19 +185,21 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         let defer = $q.defer();
         if (images[0] !== "") {
             content.forEach(function (item) {
-                item["children"].forEach(function (_item) {
-                    if (_item["tag"] && _item["tag"] === 'img') {
-                        let image = [$rootScope.fileServer + "/blog", cubeid, date, images.shift()].join("/")
-                        _item["attrs"].forEach(function (_attr) {
-                            if (_attr["name"] === 'src') {
-                                _attr["value"] = image;
+                if (item["children"]) {
+                    item["children"].forEach(function (_item) {
+                        if (_item["tag"] && _item["tag"] === 'img') {
+                            let image = [$rootScope.fileServer + "/blog", cubeid, date, images.shift()].join("/")
+                            _item["attrs"].forEach(function (_attr) {
+                                if (_attr["name"] === 'src') {
+                                    _attr["value"] = image;
+                                }
+                            })
+                            if (images.length === 0) {
+                                defer.resolve();
                             }
-                        })
-                        if (images.length === 0) {
-                            defer.resolve();
                         }
-                    }
-                })
+                    })
+                }
             })
         } else {
             defer.resolve();

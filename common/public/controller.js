@@ -24,7 +24,7 @@ app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', '$lo
         $rootScope.login = false;
         $scope.wait = false;
         $rootScope.coco = coco;
-        // $rootScope.fileServer = "http://47.119.151.14:3001"
+        // $rootScope.fileServer = "http://101.43.7.161:3001"
         // $rootScope.fileServer = "http://43.155.100.23:3001"
         $rootScope.fileServer = "https://www.cube.fan:3001"
         $rootScope.typeLibrary = {
