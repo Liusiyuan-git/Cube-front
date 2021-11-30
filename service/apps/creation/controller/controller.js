@@ -1,5 +1,7 @@
 import E from 'wangeditor'
 import "../style/style.scss"
+import hljs from 'highlight.js'
+import 'highlight.js/styles/monokai-sublime.css'
 
 window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataService', 'Upload', '$q',
     function ($rootScope, $scope, $state, $timeout, dataService, Upload, $q) {
@@ -23,6 +25,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             $scope.editor = new E('#editor-toolbar', '#editor-text');
             $scope.editor.config.zIndex = 2000;
             $scope.editor.config.height = 1200;
+            $scope.editor.highlight = hljs;
             $scope.editor.config.uploadImgMaxSize = 2 * 1024 * 1024;
             $scope.editor.config.excludeMenus = [
                 'video',
@@ -44,7 +47,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                     }, "private").then(function (data) {
                         $rootScope.swal.close();
                         if (data.success) {
-                            insertImgFn(["http://47.119.151.14:3001/draft", $rootScope.userId, data["filename"]].join("/"))
+                            insertImgFn([$rootScope.fileServer + "/draft", $rootScope.userId, data["filename"]].join("/"))
                         } else {
                             $rootScope.cubeWarning('error', data.message || "图片上传失败")
                         }
@@ -84,12 +87,12 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                             $scope.editor.txt.setJSON(content)
                         })
                         if (draft.cover) {
-                            $scope.cover = ["http://47.119.151.14:3001/draft", draft["cube_id"], draft.cover].join("/");
+                            $scope.cover = [$rootScope.fileServer + "/draft", draft["cube_id"], draft.cover].join("/");
                         }
                         $scope.blogTitle.text = draft.title
                     }
                 } else {
-                    $rootScope.cubeWarning('error', "草稿获取失败")
+                    $rootScope.cubeWarning('error', data.message || "草稿获取失败")
                 }
             })
         };
@@ -111,7 +114,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                     }, "private").then(function (data) {
                         $rootScope.swal.close();
                         if (data.success) {
-                            $scope.cover = ["http://47.119.151.14:3001/draft", $rootScope.userId, data["filename"]].join("/");
+                            $scope.cover = [$rootScope.fileServer + "/draft", $rootScope.userId, data["filename"]].join("/");
                         } else {
                             $rootScope.cubeWarning('error', data.message || "图片上传失败")
                         }
@@ -254,7 +257,9 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
 
         $scope.send = function () {
             let text = $scope.editor.txt.text()
-            text = text.replace(/&nbsp;/g, "").slice(0, 249) + "..."
+            if (text.length > 249) {
+                text = text.replace(/&nbsp;/g, "").slice(0, 249) + "...";
+            }
             if (!$scope.blogTitle.text) {
                 $rootScope.cubeWarning('warning', '请填写标题')
                 return null
@@ -332,19 +337,21 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             let defer = $q.defer()
             if (images[0] !== "") {
                 content.forEach(function (item) {
-                    item["children"].forEach(function (_item) {
-                        if (_item["tag"] && _item["tag"] === 'img') {
-                            let image = ["http://47.119.151.14:3001/draft", cubeid, images.shift()].join("/")
-                            _item["attrs"].forEach(function (_attr) {
-                                if (_attr["name"] === 'src') {
-                                    _attr["value"] = image
+                    if (item["children"]) {
+                        item["children"].forEach(function (_item) {
+                            if (_item["tag"] && _item["tag"] === 'img') {
+                                let image = [$rootScope.fileServer + "/draft", cubeid, images.shift()].join("/")
+                                _item["attrs"].forEach(function (_attr) {
+                                    if (_attr["name"] === 'src') {
+                                        _attr["value"] = image
+                                    }
+                                })
+                                if (images.length === 0) {
+                                    defer.resolve()
                                 }
-                            })
-                            if (images.length === 0) {
-                                defer.resolve()
                             }
-                        }
-                    })
+                        })
+                    }
                 })
             } else {
                 defer.resolve()
@@ -454,7 +461,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             }]
         }, {
             "key": "virtualization",
-            "name": "虚拟化",
+            "name": "云原生",
             "select": false,
             "child": [{
                 "key": "docker",
@@ -463,6 +470,10 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
             }, {
                 "key": "kubernetes",
                 "name": "kubernetes",
+                "select": false
+            }, {
+                "key": "microServices",
+                "name": "微服务",
                 "select": false
             }]
         }, {
@@ -473,6 +484,27 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                 "key": "mysql",
                 "name": "Mysql",
                 "select": true
+            }]
+        }, {
+            "key": "basics",
+            "name": "计算机基础",
+            "select": false,
+            "child": [{
+                "key": "network",
+                "name": "网络",
+                "select": false
+            }, {
+                "key": "dataStructure",
+                "name": "数据结构和算法",
+                "select": false
+            }, {
+                "key": "operatingSystem",
+                "name": "操作系统",
+                "select": false
+            }, {
+                "key": "computerComposition",
+                "name": "计算机组成原理",
+                "select": false
             }]
         }, {
             "key": "other",

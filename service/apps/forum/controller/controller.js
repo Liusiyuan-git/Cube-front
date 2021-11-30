@@ -27,7 +27,6 @@ window.app.controller("forumCtrl", ["$rootScope", "$scope", "$state", "$timeout"
         };
 
         $scope.rocket = function () {
-            console.log(11111)
             document.documentElement.scrollIntoView({block: 'start', behavior: 'smooth'})
         };
 
@@ -54,7 +53,7 @@ window.app.controller("forumCtrl", ["$rootScope", "$scope", "$state", "$timeout"
                             let time = item.date.split(" ")[0].split("-").join("")
                             item.author = item.name
                             if (item.cover) {
-                                let cover = ["http://47.119.151.14:3001/blog", item["cube_id"], time, item.cover].join("/")
+                                let cover = [$rootScope.fileServer + "/blog", item["cube_id"], time, item.cover].join("/")
                                 item.cover = cover
                             }
                         })
