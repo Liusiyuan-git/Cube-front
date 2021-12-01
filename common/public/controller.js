@@ -40,6 +40,10 @@ app.controller("PublicController", ["$rootScope", "$scope", "$state", '$q', '$lo
             kubernetes: "kubernetes",
             microServices: "微服务",
             mysql: "Mysql",
+            network: "网络",
+            dataStructure: "数据结构和算法",
+            operatingSystem: "操作系统",
+            computerComposition: "计算机组成原理",
             live: "生活"
         };
     };

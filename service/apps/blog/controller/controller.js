@@ -57,7 +57,7 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
 
     $scope.care = function (cube_id) {
         if (!$scope.loginStatusCheck()) {
-            $rootScope.cubeWarning("info", "请先登录")
+            $rootScope.cubeWarning("info", "请先登录");
             return null
         }
         dataService.callOpenApi("user.care.set", {
@@ -67,6 +67,8 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
             if (data.success) {
                 $rootScope.cubeWarning("success", "感谢关注！");
                 $scope.userCareConfirm();
+            } else {
+                $rootScope.cubeWarning("error", data.msg || "关注出错");
             }
         })
     };
@@ -157,7 +159,7 @@ app.controller("blogCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
                 $rootScope.cubeWarning("success", "已取消关注");
                 $scope.userCareConfirm();
             } else {
-                $rootScope.cubeWarning("error", "未知错误");
+                $rootScope.cubeWarning("error", data.msg || "未知错误");
             }
         })
     };
