@@ -104,8 +104,10 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
                 $scope.cubeCollection = data.content;
                 if (data.content && data.content.length > 5) {
                     $scope.collect_up = false;
-                    $scope.intervalId = setInterval($scope.collectBlockTransform, 3000)
+                    $scope.intervalId = setInterval($scope.collectBlockTransform, 3000);
                 }
+            } else {
+                $rootScope.cubeWarning("error", data.msg || "未知错误");
             }
         })
     };
@@ -113,7 +115,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
     $scope.userProfileGet = function () {
         dataService.callOpenApi("user.profile.get", {"cubeid": $rootScope.userId}, "private").then(function (data) {
             if (data.success) {
-                $rootScope.userImage = data.profile[0] ? "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data.profile[0] : null
+                $rootScope.userImage = data.profile[0] ? $rootScope.fileServer + "/user/image/" + $rootScope.userId + "/" + data.profile[0] : null
                 $scope.userName = data.profile[1];
                 $scope.userIntroduce = data.profile[2];
                 $scope.userCare = data.profile[6];
@@ -148,7 +150,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
                         let time = item.date.split(" ")[0].split("-").join("");
                         item.author = item.name;
                         if (item.cover) {
-                            let cover = ["http://47.119.151.14:3001/blog", item["cube_id"], time, item.cover].join("/")
+                            let cover = [$rootScope.fileServer + "/blog", item["cube_id"], time, item.cover].join("/")
                             item.cover = cover
                         }
                     })
@@ -253,6 +255,26 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
             "name": "Mysql",
             "select": false
         }, {
+            "key": "microServices",
+            "name": "微服务",
+            "select": false
+        }, {
+            "key": "network",
+            "name": "网络",
+            "select": false
+        }, {
+            "key": "dataStructure",
+            "name": "数据结构和算法",
+            "select": false
+        }, {
+            "key": "operatingSystem",
+            "name": "操作系统",
+            "select": false
+        }, {
+            "key": "computerComposition",
+            "name": "计算机组成原理",
+            "select": false
+        }, {
             "key": "live",
             "name": "生活",
             "select": false
@@ -309,7 +331,7 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         }]
     }, {
         "key": "virtualization",
-        "name": "虚拟化",
+        "name": "云原生",
         "select": false,
         "child": [{
             "key": "all",
@@ -323,6 +345,10 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
             "key": "kubernetes",
             "name": "kubernetes",
             "select": false
+        }, {
+            "key": "microServices",
+            "name": "微服务",
+            "select": false
         }]
     }, {
         "key": "database",
@@ -335,6 +361,31 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
         }, {
             "key": "mysql",
             "name": "Mysql",
+            "select": false
+        }]
+    }, {
+        "key": "basics",
+        "name": "计算机基础",
+        "select": false,
+        "child": [{
+            "key": "all",
+            "name": "All",
+            "select": true
+        }, {
+            "key": "network",
+            "name": "网络",
+            "select": false
+        }, {
+            "key": "dataStructure",
+            "name": "数据结构和算法",
+            "select": false
+        }, {
+            "key": "operatingSystem",
+            "name": "操作系统",
+            "select": false
+        }, {
+            "key": "computerComposition",
+            "name": "计算机组成原理",
             "select": false
         }]
     }, {

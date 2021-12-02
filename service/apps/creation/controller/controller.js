@@ -77,22 +77,19 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
         $scope.editorDataSet = function () {
             $rootScope.cubeLoading("加载中...")
             dataService.callOpenApi("get.draft", {cubeid: $rootScope.userId}, "private").then(function (data) {
-                $rootScope.swal.close()
+                $rootScope.swal.close();
                 if (data.success) {
                     if (data.content) {
-                        let draft = data.content[0]
-                        let content = JSON.parse(draft.content)
-                        let images = draft.image.split(":")
-                        $scope.imageSet(content, images, draft["cube_id"]).then(function () {
-                            $scope.editor.txt.setJSON(content)
-                        })
+                        let draft = data.content[0];
+                        let content = draft.content;
+                        $scope.editor.txt.html(content);
                         if (draft.cover) {
                             $scope.cover = [$rootScope.fileServer + "/draft", draft["cube_id"], draft.cover].join("/");
                         }
-                        $scope.blogTitle.text = draft.title
+                        $scope.blogTitle.text = draft.title;
                     }
                 } else {
-                    $rootScope.cubeWarning('error', data.message || "草稿获取失败")
+                    $rootScope.cubeWarning('error', data.msg || "草稿获取失败");
                 }
             })
         };
@@ -179,12 +176,13 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                 }
             }
             let content = $scope.editor.txt.getJSON()
+            let html = $scope.editor.txt.html();
             let params = {
                 cubeid: $rootScope.userId,
                 images: JSON.stringify($scope.imageBox(content)),
                 cover: $scope.cover ? $scope.cover.split("/").pop() : "",
                 title: $scope.blogTitle.text,
-                content: JSON.stringify(content),
+                content: html,
             }
             $rootScope.swal.fire({
                 title: '保存',
@@ -196,7 +194,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                     dataService.callOpenApi("send.draft", params, "private").then(function (data) {
                         $rootScope.swal.close()
                         if (!data.success) {
-                            $rootScope.cubeWarning('error', "保存失败")
+                            $rootScope.cubeWarning('error', data.msg || "保存失败")
                             defer.reject(false)
                         } else {
                             $rootScope.cubeWarning('success', "保存成功", 3000)
@@ -223,7 +221,7 @@ window.app.controller("creationCtrl", ["$rootScope", "$scope", "$state", "$timeo
                     dataService.callOpenApi("remove.draft", {"cubeid": $rootScope.userId}, "private").then(function (data) {
                         $rootScope.swal.close();
                         if (!data.success) {
-                            $rootScope.cubeWarning('error', "清除失败")
+                            $rootScope.cubeWarning('error', data.msg || "清除失败")
                         } else {
                             $scope.allClear();
                             $rootScope.cubeWarning('success', '内容已全部清除', 3000)
