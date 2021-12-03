@@ -146,23 +146,35 @@ app.controller("homeCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dataS
             $rootScope.swal.close();
             if (data.success && data.length) {
                 if (data.content) {
-                    data.content.forEach(function (item) {
+                    let profileIdBox = [];
+                    data.content.forEach(function (item, index) {
+                        item = JSON.parse(item);
+                        profileIdBox.push(item.id);
                         let time = item.date.split(" ")[0].split("-").join("");
                         item.author = item.name;
                         if (item.cover) {
-                            let cover = [$rootScope.fileServer + "/blog", item["cube_id"], time, item.cover].join("/")
-                            item.cover = cover
+                            let cover = [$rootScope.fileServer + "/blog", item["cube_id"], time, item.cover].join("/");
+                            item.cover = cover;
                         }
+                        data.content[index] = item;
                     })
+                    $scope.blogProfileGet(profileIdBox);
                 }
-                $scope.blogProfile = data.profile;
                 $scope.content = data.content;
                 $scope.current_page = page;
                 $scope.pageCreate(data);
                 $scope.page_created = true;
             } else {
-                $scope.content = null
+                $scope.content = null;
             }
+        })
+    };
+
+    $scope.blogProfileGet = function (profileIdBox) {
+        dataService.callOpenApi("blog.profile.get", {
+            ids: profileIdBox.join(";")
+        }, "common").then(function (data) {
+            $scope.blogProfile = data.profile;
         })
     };
 
