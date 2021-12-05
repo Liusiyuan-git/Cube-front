@@ -47,7 +47,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
                 $scope.userCareConfirm();
                 $scope.userProfileGet();
             } else {
-                $rootScope.cubeWarning("error", "关注出错")
+                $rootScope.cubeWarning("error", data.msg || "关注出错")
             }
         })
     };
@@ -82,7 +82,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
                 $scope.userCareConfirm();
                 $scope.userProfileGet();
             } else {
-                $rootScope.cubeWarning("error", "未知错误");
+                $rootScope.cubeWarning("error", data.msg || "未知错误");
             }
         })
     };
@@ -127,7 +127,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
                 $scope.userName = s;
                 $rootScope.cubeWarning("success", "修改成功")
             } else {
-                $rootScope.cubeWarning("success", "未知错误")
+                $rootScope.cubeWarning("success", data.msg || "未知错误")
             }
         })
     };
@@ -362,9 +362,9 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
             if (data.success) {
                 $scope.userProfile.introduce = s;
                 $scope.userIntroduce = s;
-                $rootScope.cubeWarning("success", "修改成功")
+                $rootScope.cubeWarning("success", "修改成功");
             } else {
-                $rootScope.cubeWarning("success", "未知错误")
+                $rootScope.cubeWarning("success", data.msg || "未知错误");
             }
         })
     };
@@ -428,7 +428,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
                             $scope.userProfileGet();
                         })
                     } else {
-                        $rootScope.cubeWarning("error", data.message || "未知错误")
+                        $rootScope.cubeWarning("error", data.msg || data.message || "未知错误")
                     }
                 })
                 done()
@@ -464,7 +464,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
                             $scope.userProfileGet();
                         })
                     } else {
-                        $rootScope.cubeWarning("error", data.message || "未知错误")
+                        $rootScope.cubeWarning("error", data.msg || data.message || "未知错误")
                     }
                 })
                 done()
@@ -498,7 +498,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
                         $scope.page_created = false;
                         $scope.profileLeave();
                     } else {
-                        $rootScope.cubeWarning("error", data.message || "未知错误")
+                        $rootScope.cubeWarning("error", data.msg || data.message || "未知错误")
                     }
                 })
                 done()
@@ -534,7 +534,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
     $scope.userProfileGet = function () {
         dataService.callOpenApi("user.profile.get", {"cubeid": $scope.profileId}, "common").then(function (data) {
             if (data.success) {
-                $scope.userImage = data.profile[0] ? "http://47.119.151.14:3001/user/image/" + $scope.profileId + "/" + data.profile[0] : null;
+                $scope.userImage = data.profile[0] ? $rootScope.fileServer + "/user/image/" + $scope.profileId + "/" + data.profile[0] : null;
                 $scope.userName = data.profile[1];
                 $scope.userIntroduce = data.profile[2];
                 $scope.userProfile = data.profile
@@ -650,7 +650,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
                 $rootScope.cubeWarning("success", "上传成功");
                 $scope.userImageUpdate();
             } else {
-                $rootScope.cubeWarning("error", "上传出错")
+                $rootScope.cubeWarning("error", data.msg || "上传出错");
             }
             $scope.imageDialogClose();
             done()
@@ -662,8 +662,10 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
             cubeid: $rootScope.userId,
         }, 'private').then(function (data) {
             if (data.success) {
-                $rootScope.userImage = "http://47.119.151.14:3001/user/image/" + $rootScope.userId + "/" + data.image;
+                $rootScope.userImage = $rootScope.fileServer + "/user/image/" + $rootScope.userId + "/" + data.image;
                 localStorage.setItem("userImage", data.image);
+            } else {
+                $rootScope.cubeWarning("error", data.msg || "未知错误");
             }
         })
     };
@@ -711,7 +713,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
                         let time = item.date.split(" ")[0].split("-").join("")
                         item.author = item.name
                         if (item.cover) {
-                            let cover = ["http://47.119.151.14:3001/blog", item["cube_id"], time, item.cover].join("/")
+                            let cover = [$rootScope.fileServer + "/blog", item["cube_id"], time, item.cover].join("/")
                             item.cover = cover
                         }
                     })
@@ -768,7 +770,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
                         let time = item.date.split(" ")[0].split("-").join("")
                         item.author = item.name
                         if (item.cover) {
-                            let cover = ["http://47.119.151.14:3001/blog", item["cube_id"], time, item.cover].join("/")
+                            let cover = [$rootScope.fileServer + "/blog", item["cube_id"], time, item.cover].join("/")
                             item.cover = cover
                         }
                     })
@@ -804,7 +806,7 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
             let time = item.date.split(" ")[0].split("-").join("");
             if (item.images) {
                 item.images.split(":").forEach(function (image) {
-                    let link = ["http://47.119.151.14:3001/talk", item["cube_id"], time, image].join("/")
+                    let link = [$rootScope.fileServer + "/talk", item["cube_id"], time, image].join("/")
                     if (!$scope.talkImagesBlock[item["id"]]) {
                         $scope.talkImagesBlock[item["id"]] = [link];
                     } else {
@@ -868,13 +870,15 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
 
     $scope.goToUserProfile = function (cube_id) {
         localStorage.setItem("profileId", cube_id);
-        $state.go("profile", {state: 'profile', "menu": 0}, {reload: true});
+        $state.go("profile", {state: 'profile', "menu": 0}, {reload: 'profile'});
     };
 
     $scope.profileCare = function () {
+        $rootScope.cubeLoading("加载中...");
         dataService.callOpenApi('user.profile.care', {
             cubeid: $scope.profileId,
         }, 'common').then(function (data) {
+            $rootScope.swal.close()
             if (data.success) {
                 $scope.profileCareData = data["profileCare"]
             }
@@ -882,9 +886,11 @@ app.controller("profileCtrl", ["$rootScope", "$scope", "$state", "$timeout", "$q
     };
 
     $scope.profileCared = function () {
+        $rootScope.cubeLoading("加载中...");
         dataService.callOpenApi('user.profile.cared', {
             cubeid: $scope.profileId,
         }, 'common').then(function (data) {
+            $rootScope.swal.close()
             if (data.success) {
                 $scope.profileCaredData = data["profileCared"]
             }

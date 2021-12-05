@@ -144,7 +144,7 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                         let time = item.date.split(" ")[0].split("-").join("")
                         item.author = item.name
                         if (item.cover) {
-                            let cover = ["http://47.119.151.14:3001/blog", item.blog === '1' ? item["send_id"] : $rootScope.userId, time, item.cover].join("/")
+                            let cover = [$rootScope.fileServer + "/blog", item.blog === '1' ? item["send_id"] : $rootScope.userId, time, item.cover].join("/")
                             item.cover = cover
                         }
                     }
@@ -185,7 +185,7 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                         $scope.page_created = false;
                         $scope.userMessageGet();
                     } else {
-                        $rootScope.cubeWarning("error", data.message || "未知错误")
+                        $rootScope.cubeWarning("error", data.msg || data.message || "未知错误")
                     }
                 })
                 done()
@@ -449,7 +449,7 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
                         let time = item.date.split(" ")[0].split("-").join("")
                         item.author = item.name
                         if (item.cover) {
-                            let cover = ["http://47.119.151.14:3001/blog", item["cube_id"], time, item.cover].join("/")
+                            let cover = [$rootScope.fileServer + "/blog", item["cube_id"], time, item.cover].join("/")
                             item.cover = cover
                         }
                     })
@@ -526,7 +526,7 @@ app.controller("messageCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             let time = item.date.split(" ")[0].split("-").join("")
             if (item.images) {
                 item.images.split(":").forEach(function (image) {
-                    let link = ["http://47.119.151.14:3001/talk", item["cube_id"], time, image].join("/")
+                    let link = [$rootScope.fileServer + "/talk", item["cube_id"], time, image].join("/")
                     if (!$scope.talkImagesBlock[item["id"]]) {
                         $scope.talkImagesBlock[item["id"]] = [link]
                     } else {
