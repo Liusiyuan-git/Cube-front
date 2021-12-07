@@ -126,35 +126,18 @@ app.controller("registerCtrl", ['$rootScope', '$scope', '$interval', 'dataServic
 
     $scope.register = function () {
         if ($scope.paramsCheck()) {
-            $rootScope.swal.fire(
-                {
-                    icon: "info",
-                    title: "数据提交中...",
-                    showConfirmButton: false,
-                    showCancelButton: false,
-                    onBeforeOpen: () => {
-                        $rootScope.swal.showLoading();
-                        dataService.callOpenApi("user.register", $scope.params, "register").then(function (data) {
-                            $rootScope.swal.close()
-                            $rootScope.cubeWarning(data.success ? 'success' : 'error', data.success ? '注册成功' : '注册失败')
-                            if (data.success) {
-                                $timeout(function () {
-                                    $state.go("login")
-                                }, 2000)
-                            }
-                        })
-                    }
+            $rootScope.cubeLoading("加载中...");
+            dataService.callOpenApi("user.register", $scope.params, "register").then(function (data) {
+                $rootScope.swal.close()
+                $rootScope.cubeWarning(data.success ? 'success' : 'error', data.success ? '注册成功' : '注册失败')
+                if (data.success) {
+                    $timeout(function () {
+                        $state.go("login")
+                    }, 2000)
                 }
-            )
-        } else {
-            $rootScope.swal.fire({
-                icon: 'error',
-                title: '错误',
-                text: '表单信息错误，请仔细检查!',
-                showConfirmButton: false,
-                showCancelButton: false,
-                timer: 2000
             })
+        } else {
+            $rootScope.cubeWarning("error", '表单信息错误，请仔细检查!');
         }
     };
 
