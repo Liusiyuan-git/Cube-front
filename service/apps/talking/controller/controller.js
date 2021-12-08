@@ -60,7 +60,7 @@ app.controller("talkingCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'da
             let time = item.date.split(" ")[0].split("-").join("")
             if (item.images) {
                 item.images.split(":").forEach(function (image) {
-                    let link = ["http://47.119.151.14:3001/talk", item["cube_id"], time, image].join("/")
+                    let link = [$rootScope.fileServer + "/talk", item["cube_id"], time, image].join("/")
                     if (!$scope.talkImagesBlock[item["id"]]) {
                         $scope.talkImagesBlock[item["id"]] = [link]
                     } else {

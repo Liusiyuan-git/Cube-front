@@ -38,7 +38,7 @@ app.controller("searchCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dat
     };
 
     $scope.cubeSearch = function (content) {
-        if (content === '') {
+        if (!content || content === '') {
             $rootScope.cubeWarning("info", "请输入搜索内容");
             return null;
         }
@@ -95,7 +95,7 @@ app.controller("searchCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dat
             data.content.forEach(function (item) {
                 let time = item['_source'].date.split(" ")[0].split("-").join("");
                 if (item['_source'].cover) {
-                    let cover = ["http://47.119.151.14:3001/blog", item['_source']["cube_id"], time, item['_source'].cover].join("/")
+                    let cover = [$rootScope.fileServer + "/blog", item['_source']["cube_id"], time, item['_source'].cover].join("/")
                     item['_source'].cover = cover
                 }
                 if (item["highlight"]["text"]) {
@@ -144,7 +144,7 @@ app.controller("searchCtrl", ["$rootScope", "$scope", "$state", "$timeout", 'dat
             let time = item['_source'].date.split(" ")[0].split("-").join("")
             if (item['_source'].images) {
                 item['_source'].images.split(":").forEach(function (image) {
-                    let link = ["http://47.119.151.14:3001/talk", item['_source']["cube_id"], time, image].join("/")
+                    let link = [$rootScope.fileServer + "/talk", item['_source']["cube_id"], time, image].join("/")
                     if (!$scope.talkImagesBlock[item['_source']["index"]]) {
                         $scope.talkImagesBlock[item['_source']["index"]] = [link]
                     } else {
