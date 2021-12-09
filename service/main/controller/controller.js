@@ -10,11 +10,12 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
             $scope.select($state.params.state)
         }
         $scope.searchData = "";
+        $scope.userMenuDisplay();
     };
 
     $scope.CubeSearch = function (content) {
-        if(content === ''){
-            $rootScope.cubeWarning("info","请输入搜索内容");
+        if (content === '') {
+            $rootScope.cubeWarning("info", "请输入搜索内容");
             return null;
         }
         $state.go("search", {state: "search", search: content})
@@ -22,14 +23,14 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
 
     $scope.selectAndGo = function (state) {
         $scope.menu_list.forEach(function (item) {
-            item.select = item.state === state
+            item.select = item.state === state;
         })
-        $state.go(state, {state: state})
+        $state.go(state, {state: state});
     };
 
     $scope.select = function (state) {
         $scope.menu_list.forEach(function (item) {
-            item.select = item.state === state
+            item.select = item.state === state;
         })
     };
 
@@ -38,16 +39,19 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
         if (element) {
             element.style.display = "inline";
         }
+        $scope.userMenuDisplay()
         e.stopPropagation();
     };
 
-    document.onclick = function (e) {
-        let element = document.getElementById("user-menu")
-        if (element) {
-            element.style.display = "none";
-        }
-        e.stopPropagation();
-    };
+    $scope.userMenuDisplay = function () {
+        document.onclick = function (e) {
+            let element = document.getElementById("user-menu")
+            if (element) {
+                element.style.display = "none";
+            }
+            e.stopPropagation();
+        };
+    }
 
     $scope.exit = function () {
         dataService.callOpenApi("count.exit", {}, "login").then(function (data) {
@@ -57,38 +61,58 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
             } else {
                 $rootScope.cubeWarning("error", "未知错误", "5000")
             }
-            localStorage.removeItem('setLoginStartTime')
+            $rootScope.$emit('$MqClose');
             localStorage.removeItem('CubeId')
             localStorage.removeItem("userName")
             $rootScope.userId = ""
             $rootScope.userName = ""
             $rootScope.login = false;
+
         })
     };
 
     $scope.userLogin = function () {
-        $state.go("login")
+        $state.go("login");
     };
 
     $scope.Home = function () {
-        $state.go("home", {state: "home"})
+        $state.go("home", {state: "home"});
     };
 
     $scope.profile = function () {
         localStorage.setItem("profileId", $rootScope.userId);
-        $state.go("profile", {state: 'profile'});
+        $state.go("profile", {state: 'profile', "menu": 0}, {reload: "profile"});
     };
 
     $rootScope.$on('$stateChangeSuccess', function () {
-        $scope.select($state.params.state)
+        $scope.select($state.params.state);
     });
 
     $scope.$on("mainMenu", function () {
         if ($state.params.state) {
-            $scope.select($state.params.state)
+            $scope.select($state.params.state);
         }
-    })
+    });
 
+    $scope.$on("userMenuDisplay", function () {
+        $scope.userMenuDisplay();
+    });
+
+    $scope.exitFront = function () {
+        $rootScope.coco({
+            title: "退出登录",
+            el: "#exit",
+            okText: "确认",
+            buttonColor: '#0077ff',
+        }).onClose(function (ok, cc, done) {
+            if (ok) {
+                $scope.exit();
+                done();
+            } else {
+                done();
+            }
+        });
+    };
 
     $scope.menu_list = [{
         id: 0,
@@ -136,14 +160,9 @@ app.controller("mainCtrl", ["$rootScope", "$scope", "$state", "$timeout", "dataS
         func: $scope.profile
     }, {
         id: 1,
-        key: "setting",
-        name: "设置",
-        icon: "icon-setting-fill"
-    }, {
-        id: 2,
         key: "exit",
         name: "退出",
         icon: "icon-poweroff",
-        func: $scope.exit
+        func: $scope.exitFront
     }]
 }])
