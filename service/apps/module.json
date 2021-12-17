@@ -1,68 +1,100 @@
 {
   "name": "enter.auth",
   "app_name": "myApp",
-  "states":[{
-    "name": "login",
-    "url": "/login",
-    "parent": "main",
-    "controller": "loginCtrl",
-    "templateUrl": "./login/template/template.html",
-    "require": "./login/controller/controller.js"
-  },{
-    "name": "register",
-    "url": "/register",
-    "parent": "main",
-    "controller": "registerCtrl",
-    "templateUrl": "./register/template/template.html",
-    "require": "./register/controller/controller.js"
-  },{
-    "name": "community",
-    "url": "/community",
-    "parent": "main",
-    "controller": "communityCtrl",
-    "templateUrl": "./community/template/template.html",
-    "require": "./community/controller/controller.js"
-  },{
-    "name": "home",
-    "url": "/home?state",
-    "parent": "community",
-    "controller": "homeCtrl",
-    "templateUrl": "./home/template/template.html",
-    "require": "./home/controller/controller.js"
-  },{
-    "name": "talking",
-    "url": "/talking?state",
-    "parent": "community",
-    "controller": "talkingCtrl",
-    "templateUrl": "./talking/template/template.html",
-    "require": "./talking/controller/controller.js"
-  },{
-    "name": "creation",
-    "url": "/creation?state",
-    "parent": "community",
-    "controller": "creationCtrl",
-    "templateUrl": "./creation/template/template.html",
-    "require": "./creation/controller/controller.js"
-  },{
-    "name": "blog",
-    "url": "/blog?id",
-    "parent": "community",
-    "controller": "blogCtrl",
-    "templateUrl": "./blog/template/template.html",
-    "require": "./blog/controller/controller.js"
-  },{
-    "name": "forum",
-    "url": "/forum?state",
-    "parent": "community",
-    "controller": "forumCtrl",
-    "templateUrl": "./forum/template/template.html",
-    "require": "./forum/controller/controller.js"
-  },{
-    "name": "profile",
-    "url": "/profile?state",
-    "parent": "community",
-    "controller": "profileCtrl",
-    "templateUrl": "./profile/template/template.html",
-    "require": "./profile/controller/controller.js"
-  }]
+  "states": [
+    {
+      "name": "login",
+      "url": "/login",
+      "controller": "loginCtrl",
+      "templateUrl": "./login/template/template.html",
+      "require": "./login/controller/controller.js"
+    },
+    {
+      "name": "register",
+      "url": "/register",
+      "controller": "registerCtrl",
+      "templateUrl": "./register/template/template.html",
+      "require": "./register/controller/controller.js"
+    },
+    {
+      "name": "community",
+      "url": "/community",
+      "parent": "main",
+      "controller": "communityCtrl",
+      "templateUrl": "./community/template/template.html",
+      "require": "./community/controller/controller.js"
+    },
+    {
+      "name": "home",
+      "url": "/home?state&page&menu&filter&child",
+      "parent": "community",
+      "controller": "homeCtrl",
+      "templateUrl": "./home/template/template.html",
+      "require": "./home/controller/controller.js"
+    },
+    {
+      "name": "talking",
+      "url": "/talking?state",
+      "parent": "community",
+      "controller": "talkingCtrl",
+      "templateUrl": "./talking/template/template.html",
+      "require": "./talking/controller/controller.js"
+    },
+    {
+      "name": "creation",
+      "url": "/creation?state",
+      "parent": "community",
+      "controller": "creationCtrl",
+      "templateUrl": "./creation/template/template.html",
+      "require": "./creation/controller/controller.js"
+    },
+    {
+      "name": "blog",
+      "url": "/blog?id",
+      "parent": "community",
+      "controller": "blogCtrl",
+      "templateUrl": "./blog/template/template.html",
+      "require": "./blog/controller/controller.js"
+    },
+    {
+      "name": "forum",
+      "url": "/forum?state",
+      "parent": "community",
+      "controller": "forumCtrl",
+      "templateUrl": "./forum/template/template.html",
+      "require": "./forum/controller/controller.js"
+    },
+    {
+      "name": "profile",
+      "url": "/profile?state&menu",
+      "parent": "community",
+      "controller": "profileCtrl",
+      "templateUrl": "./profile/template/template.html",
+      "require": "./profile/controller/controller.js"
+    },
+    {
+      "name": "message",
+      "url": "/message?state",
+      "parent": "community",
+      "controller": "messageCtrl",
+      "templateUrl": "./message/template/template.html",
+      "require": "./message/controller/controller.js"
+    },
+    {
+      "name": "search",
+      "url": "/search?state&search",
+      "parent": "community",
+      "controller": "searchCtrl",
+      "templateUrl": "./search/template/template.html",
+      "require": "./search/controller/controller.js"
+    },
+    {
+      "name": "about",
+      "url": "/about?state",
+      "parent": "community",
+      "controller": "aboutCtrl",
+      "templateUrl": "./about/template/template.html",
+      "require": "./about/controller/controller.js"
+    }
+  ]
 }
