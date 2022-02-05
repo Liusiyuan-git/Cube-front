@@ -65,6 +65,7 @@
               height: 35px;
               border-radius: 50%;
               overflow: hidden;
+              cursor: pointer;
 
               .img {
                 width: 100%;
@@ -76,6 +77,11 @@
 
             .author {
               margin: 0 5px;
+              cursor: pointer;
+            }
+
+            .author:hover {
+              color: $color-high-light;
             }
 
             .button {
@@ -95,7 +101,7 @@
               justify-content: center;
             }
 
-            .button:active{
+            .button:active {
               transform: scale(.9);
             }
           }
@@ -123,6 +129,16 @@
         .w-e-text {
           font-size: 17px !important;
           font-weight: 400;
+
+          pre code {
+            display: block;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 10pt;
+            color: #f8f8f2;
+            background: #23241f;
+            overflow: auto;
+            padding: 1em;
+          }
         }
 
         .blog-text {
@@ -146,7 +162,8 @@
         box-shadow: 0 0 6px rgb(0 0 0 / 12%);
         cursor: pointer;
         z-index: 5;
-        .mark{
+
+        .mark {
           position: absolute;
           font-size: 12px;
           top: 0;
@@ -192,7 +209,7 @@
 
   .comment {
     width: 1200px;
-    margin: 0 auto;
+    margin: 100px auto;
 
     .comments {
       width: 680px;
@@ -239,6 +256,7 @@
         }
 
         .comment-part1 {
+          cursor: pointer;
 
           .image {
             width: 34px;
@@ -254,11 +272,17 @@
           padding-bottom: 20px;
 
           .name {
-            font-size: 16px;
+            cursor: pointer;
+            width: fit-content;
+            font-size: 15px;
             color: #3d464d;
             font-weight: 500;
             -webkit-font-smoothing: antialiased;
             line-height: 34px;
+          }
+
+          .name:hover {
+            color: $color-high-light
           }
 
           .content {
@@ -290,7 +314,10 @@
               color: #888;
 
               .icon-style {
+                color: $color-high-light;
                 margin-right: 44px;
+                font-size: 18px;
+                cursor: pointer;
               }
             }
           }
@@ -315,6 +342,7 @@
         .image-block {
           display: flex;
           align-items: center;
+          cursor: pointer;
 
           .image {
             height: 34px;
@@ -328,12 +356,22 @@
 
         .user-name {
           color: #3d464d;
+          cursor: pointer;
           font-weight: 600;
           -webkit-font-smoothing: antialiased;
           font-size: 16px;
           line-height: 34px;
           padding-left: 10px;
         }
+
+        .user-name:hover {
+          color: $color-high-light;
+        }
+      }
+
+      .w-e-text {
+        font-size: 17px !important;
+        font-weight: 400;
       }
 
       .text-style {

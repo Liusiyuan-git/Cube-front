@@ -234,6 +234,7 @@
           }
         }
 
+
         .w-e-toolbar {
           border: none !important;
           border-bottom: 1px solid #EEE !important;
@@ -242,11 +243,22 @@
         .w-e-text {
           font-size: 17px !important;
           font-weight: 400;
+
+          pre code {
+            display: block;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 10pt;
+            color: #f8f8f2;
+            background: #23241f;
+            overflow: auto;
+            padding: 1em;
+          }
         }
 
         .w-e-text-container {
           border: none !important;
         }
+
 
         .editor-text {
           min-height: 400px;

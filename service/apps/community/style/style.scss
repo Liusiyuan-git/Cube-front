@@ -1,7 +1,24 @@
-.community{
+@import "../../../../common/styles/common.color";
+
+.community {
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
+  position: absolute;
   background: #f5f5f5;
+
+  .bian-block {
+    background: #f6f9fa;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .beian {
+      font: 12px -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Arial, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif;
+      color: $color-gray-700;
+      text-decoration: unset;
+    }
+  }
 }

@@ -1,0 +1,66 @@
+@import "../../../../common/styles/common.color";
+
+.about {
+  padding-top: 70px;
+  min-height: 90vh;
+  background: $color-white;
+
+  .container {
+    width: 1100px;
+    margin: 0 auto;
+    opacity: 0;
+    display: flex;
+
+    .left-area {
+      top: 66px;
+      width: 220px;
+      overflow-x: hidden;
+      box-sizing: border-box;
+      padding-top: 30px;
+      padding-right: 20px;
+      padding-bottom: 40px;
+      z-index: 12;
+
+      .left-menu-area {
+        margin-top: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        height: 34px;
+        border-radius: 17px;
+        padding: 0 18px;
+        color: #888;
+        cursor: pointer;
+      }
+
+      .left-menu-area-select {
+        color: $color-high-light;
+        background: #f5f8fa;
+      }
+
+      .left-menu-area:hover {
+        background: #f5f8fa;
+      }
+    }
+
+    .right-area {
+      width: 650px;
+
+      .cube-about {
+        .about-image {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  .container.in {
+    -webkit-transition: all 5.5s;
+    -moz-transition: all 1.5s;
+    -ms-transition: all 1.5s;
+    -o-transition: all 1.5s;
+    transition: all 1.5s;
+    opacity: 1 !important;
+  }
+}
