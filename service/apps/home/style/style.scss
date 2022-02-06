@@ -4,6 +4,7 @@
   padding-top: 70px;
   min-height: 90vh;
   background: $color-white;
+  color: rgb(0.0.0.0);
 
   .container {
     width: 1150px;
@@ -164,16 +165,49 @@
             }
 
             .title-author {
-              margin-top: 5px;
+              margin-top: 20px;
               max-width: 100%;
               color: #404040;
               font-size: 14px;
               font-weight: 400;
               white-space: nowrap;
               text-overflow: ellipsis;
+              justify-content: space-between;
               overflow: hidden;
               display: flex;
               align-items: center;
+
+              .title-name {
+                flex-grow: 1
+              }
+
+              .title-name:hover {
+                color: $color-high-light;
+              }
+
+              .image {
+                width: 35px;
+                height: 35px;
+                border-radius: 100%;
+                background: #c0c4cc;
+                display: flex;
+                align-items: center;
+                color: #fff;
+                justify-content: center;
+                font-size: 18px;
+                cursor: pointer;
+              }
+
+              .title-type {
+                .icon-tag-style {
+                  color: $color-gray-600;
+                  display: inline-block;
+                }
+
+                .label-type {
+                  display: inline-block;
+                }
+              }
             }
           }
 
@@ -415,6 +449,7 @@
               font-size: 12px;
               font-weight: 400;
               color: #b2b2b2;
+              cursor: pointer;
             }
           }
 
@@ -462,6 +497,7 @@
                   transition: all .3s;
                   width: 100%;
                 }
+
                 .collect-content-word:hover {
                   color: $color-high-light;
                 }

@@ -1,29 +1,16 @@
 @import "../../../../common/styles/common.color";
 
-.register-image {
-  width: 100%;
-}
-
-.register-mask {
-  position: absolute;
-  top: 55px;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: $color-white;
-  opacity: 0.6;
-}
-
 .register-window {
   position: absolute;
-  z-index: 10;
   left: 0;
   right: 0;
   margin: auto;
-  top: 55px;
+  background: #fafbfd;
+  top: 0;
   bottom: 0;
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-direction: column;
 
   .register-title {
@@ -36,16 +23,18 @@
 
   .register-dialog {
     width: 500px;
-    height: 624px;
+    height: fit-content;
+    max-width: 366px;
     border-color: rgba(228, 228, 228, 1);
-    border-radius: 0;
-    box-shadow: 0 8px 16px 0 rgb(0 0 0 / 10%);
+    border-radius: 6px;
+    box-shadow: 0 0.9px 4px -1px rgb(0 0 0 / 8%), 0 2.6px 8px -1px rgb(0 0 0 / 6%), 0 5.7px 12px -1px rgb(0 0 0 / 5%), 0 15px 15px -1px rgb(0 0 0 / 4%);
     background-color: $color-white;
     display: flex;
     align-items: center;
     flex-direction: column;
+    padding: 32px;
 
-    .wrong-message{
+    .wrong-message {
       position: absolute;
       top: 0;
       margin: 15px;
@@ -55,163 +44,179 @@
     }
 
     .register-dialog-title {
-      width: 500px;
-      height: 72px;
-      border-bottom: #e5e5e5 1px solid;
-      position: relative;
-      background-color: $color-white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      .title-word {
-        font-weight: 400;
-        font-size: 18px;
-      }
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+      white-space: nowrap;
     }
 
     .email-block {
-      padding-top: 40px;
-      width: 420px;
-      margin-bottom: 20px;
+      padding-top: 10px;
+      width: 366px;
+      margin-bottom: 10px;
 
       .email-input-block {
         font-size: 14px;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
         position: relative;
 
-        .email-input {
-          font-size: 14px;
-          height: 45px;
-          width: 100%;
-          display: inline-block;
-          border: 1px solid #e5e5e5;
-          color: #333;
-          vertical-align: middle;
-          padding: 13px 10px 12px;
-          box-sizing: border-box;
-          -webkit-appearance: none;
-          -moz-appearance: none;
-          appearance: none;
-          border-radius: 0;
+        .title-block {
+          display: flex;
+          justify-content: space-between;
+
+          .email-input-title {
+            color: #1a1c21;
+            font-weight: 600;
+            display: inline-block;
+            font-size: 12px;
+          }
         }
 
-        .email-input:focus {
-          border-color: $color-high-light;
-          outline: 0;
-        }
-
-        .email-input-wrong{
-          border-color: $color-red;
-        }
-
-        .email-input-wrong:focus{
-          border-color: $color-red;
-        }
-      }
-    }
-
-    .phone-block {
-      width: 420px;
-      margin-bottom: 20px;
-
-      .phone-title {
-        color: #999;
-        font-size: 14px;
-        line-height: 20px;
-        text-align: center;
-        position: relative;
-        margin-bottom: 20px;
-
-        .title {
-          display: inline-block;
-          background-color: #fff;
-          padding: 0 20px;
-          z-index: 2;
-        }
-      }
-
-      .phone-input-block {
-        font-size: 14px;
-        margin-bottom: 20px;
-        position: relative;
-
-        .input-block{
+        .input-block {
           position: relative;
+
+          .email-input {
+            height: 23px;
+            padding: 12px 12px 12px 40px;
+            width: 314px;
+            background-color: #fbfcfd;
+            background-repeat: no-repeat;
+            background-size: 0 100%;
+            box-shadow: 0 0 transparent, inset 0 0 0 1px rgba(17, 43, 134, .1);
+            transition: box-shadow .15s ease-in, background-image .15s ease-in, background-size .15s ease-in, background-color .15s ease-in;
+            font-family: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+            font-weight: 400;
+            letter-spacing: normal;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            -webkit-font-kerning: normal;
+            font-kerning: normal;
+            font-size: 14px;
+            color: #343741;
+            border: none;
+            border-radius: 6px;
+          }
+
+          .email-input:focus {
+            background-color: #fff;
+            background-image: linear-gradient(0deg, #07c, #07c 2px, transparent 0, transparent);
+            background-size: 100% 100%;
+            outline: none;
+          }
+
+          .icon-style {
+            position: absolute;
+            height: 47px;
+            top: 0;
+            display: flex;
+            width: 40px;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .icon-eye-style {
+            position: absolute;
+            height: 47px;
+            border-radius: 0 6px 6px 0;
+            background: #e9edf3;
+            top: 0;
+            color: #03a9f4;
+            right: 0;
+            display: flex;
+            width: 32px;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .icon-code-style {
+            position: absolute;
+            height: 47px;
+            width: 32px;
+            border-radius: 0 6px 6px 0;
+            background: #e9edf3;
+            top: 0;
+            color: #03a9f4;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+          }
+
+          .icon-code-disable-style {
+            position: absolute;
+            height: 47px;
+            width: 32px;
+            border-radius: 0 6px 6px 0;
+            background: #e9edf3;
+            top: 0;
+            color: $color-gray-500;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .timing {
+            position: absolute;
+            height: 47px;
+            top: 0;
+            color: #03a9f4;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 500;
+            padding-right: 10px;
+          }
+
+          .email-input:focus {
+            border-color: $color-high-light;
+            outline: 0;
+          }
         }
 
-        .verification {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 45%;
-          color: $color-high-light;
-          background: white;
-          border: 1px solid $color-high-light;
-          cursor: pointer;
-        }
-
-        .verification-disable {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 45%;
-          cursor: pointer;
-        }
-
-        .phone-input {
-          font-size: 14px;
-          height: 45px;
-          width: 100%;
-          display: inline-block;
-          border: 1px solid #e5e5e5;
-          color: #333;
-          vertical-align: middle;
-          padding: 13px 10px 12px;
-          box-sizing: border-box;
-          -webkit-appearance: none;
-          -moz-appearance: none;
-          appearance: none;
-          border-radius: 0;
-        }
-
-        .phone-input:focus {
-          border-color: $color-high-light;
-          outline: 0;
-        }
-
-        .phone-input-wrong{
+        .email-input-wrong {
           border-color: $color-red;
         }
 
-        .phone-input-wrong:focus{
+        .email-input-wrong:focus {
           border-color: $color-red;
         }
-      }
-
-      .phone-title:after {
-        content: "";
-        position: absolute;
-        width: 100%;
-        height: 1px;
-        background-color: #e5e5e5;
-        top: 50%;
-        left: 0;
-        z-index: 1;
       }
     }
 
-    .register-button {
+    .cube-bottom {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 45px;
-      width: 420px;
-      font-size: 14px;
-      background-color: $color-high-light;
-      border-radius: 2px;
-      color: $color-white;
-      cursor: pointer;
+      width: 100%;
+      justify-content: space-between;
+
+      .bottom-button {
+        display: flex;
+        align-items: center;
+        background: rgba(0, 119, 204, .2);
+        justify-content: center;
+        width: 180px;
+        height: 40px;
+        color: $color-high-light;
+        font-weight: 500;
+        border-radius: 6px;
+        cursor: pointer;
+
+        .icon-style {
+          font-size: 13px;
+        }
+
+        .cube-bottom-word {
+          font-size: 13px;
+          margin: 0 10px;
+        }
+      }
+
+      .bottom-button:active {
+        transform: scale(.9);
+      }
     }
   }
 }
