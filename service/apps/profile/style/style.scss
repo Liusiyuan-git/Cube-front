@@ -307,7 +307,7 @@
                 }
               }
 
-              .toLeave:active{
+              .toLeave:active {
                 transform: scale(.9);
               }
             }
@@ -337,6 +337,7 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid hsla(0, 0%, 91.4%, .6);
+            cursor: pointer;
 
             .content-detail {
               display: flex;
@@ -391,26 +392,31 @@
               }
             }
 
-            .content-type {
-              color: #888;
-              line-height: 18px;
-              font-size: 15px;
-              font-weight: 400;
+            .content-type-icon {
+              display: inline-block;
+              color: $color-gray-600;
             }
 
-            .content-button {
-              border: none;
-              cursor: pointer;
-              font-size: 15px;
-              display: flex;
-              width: 89px;
-              height: 32px;
-              line-height: 32px;
-              justify-content: center;
-              border-radius: 4px;
-              font-weight: 500;
-              color: #fff;
-              background: #03a9f4;
+            .content-type {
+              font-size: 13px;
+              display: inline-block;
+            }
+
+            .content-bottom {
+              color: #03a9f4;
+              margin-right: 20px;
+              min-width: 50px;
+
+              .icon-delete-style {
+                font-size: 14px;
+                display: inline-block;
+              }
+
+              .content-delete {
+                font-size: 14px;
+                display: inline-block;
+                font-weight: 400;
+              }
             }
 
 
@@ -471,6 +477,27 @@
                     font-weight: 400;
                     line-height: 1;
                   }
+
+                  .name:hover {
+                    color: $color-high-light
+                  }
+                }
+
+                .leave-bottom {
+                  display: flex;
+                  cursor: pointer;
+
+                  .leave-icon-style {
+                    display: inline-block;
+                    font-size: 14px;
+                    color: $color-high-light;
+                  }
+
+                  .leave-delete {
+                    display: inline-block;
+                    color: $color-high-light;
+                    font-size: 14px;
+                  }
                 }
               }
 
@@ -495,6 +522,7 @@
                   .images-block {
                     display: flex;
                     align-items: center;
+                    cursor: pointer;
                     overflow: hidden;
                     margin-right: 20px;
                     border-radius: 5px;
@@ -514,6 +542,19 @@
                   .icon-style-comment {
                     font-size: 20px;
                     cursor: pointer;
+                  }
+
+                  .icon-style-delete {
+                    font-size: 15px;
+                    cursor: pointer;
+                    color: $color-high-light;
+                    margin-right: 5px;
+                  }
+
+                  .delete-word-style {
+                    cursor: pointer;
+                    color: $color-high-light;
+                    font-size: 13px;
                   }
                 }
               }
